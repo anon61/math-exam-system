@@ -1,35 +1,42 @@
-// tests/validate_db.typ
 #import "../src/lib.typ": eval-scope
 
 #let questions = yaml("../data/questions.yaml")
 
-#text(fill: green)[
-  Database Integrity Check: PASSED
-]
+#print("Validating " + str(questions.len()) + " questions...")
 
-#line(length: 100%)
-#v(8pt)
+#for (i, q) in questions.enumerate() {
+  let q_id = q.at("id", default: "Index " + str(i))
 
-Total questions validated: #questions.len()
+  // 1. CRITICAL: Enforce The Generalized Schema Structure
+  // These fields are now MANDATORY. The build will fail without them.
+  let required_fields = ("topic", "tools", "common_mistakes", "year", "lecturer")
+  
+  for field in required_fields {
+    if field not in q {
+      panic("SCHEMA VIOLATION in [" + q_id + "]: Missing mandatory field '" + field + "'")
+    }
+  }
 
-#for q in questions {
-  // Validate 'given' if it exists and is not empty
+  // 2. Validate Math Content (Prevent rendering crashes)
+  // We wrap these in a check to ensure they aren't just empty strings
   if "given" in q and q.given != none { 
-    eval(q.given, mode: "markup", scope: eval-scope) 
+    let _ = eval(q.given, mode: "markup", scope: eval-scope) 
   }
   
-  // Validate 'to_prove' if it exists and is not empty
   if "to_prove" in q and q.to_prove != none { 
-    eval(q.to_prove, mode: "markup", scope: eval-scope) 
+    let _ = eval(q.to_prove, mode: "markup", scope: eval-scope) 
   }
   
-  // Validate 'body' if it exists (Legacy Schema)
-  if "body" in q and q.body != none { 
-    eval(q.body, mode: "markup", scope: eval-scope) 
+  if "hint" in q and q.hint != none { 
+    let _ = eval(q.hint, mode: "markup", scope: eval-scope) 
   }
 
-  // Validate 'hint'
-  if "hint" in q and q.hint != none { 
-    eval(q.hint, mode: "markup", scope: eval-scope) 
+  // 3. Logic Check
+  if q.topic == "" or q.topic == none {
+    panic("DATA ERROR in [" + q_id + "]: Topic cannot be empty.")
   }
 }
+
+#text(fill: green, weight: "bold")[
+  ✓ SUCCESS: All questions adhere to the Generalized Schema.
+]

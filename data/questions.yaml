@@ -1,38 +1,63 @@
+# ==========================================
+# ===   CORNELL-TUFTE HYBRID EXAM DATA   ===
+# ==========================================
+
 - id: "ANALYSIS-001"
   year: 2024
   lecturer: "Prof. Lebesque"
   topic: "Measure Theory"
   technique: "Dominated Convergence"
+  cue: "Check assumptions: Finite measure? Non-negative?"
+  ghost: |
+    *Proof Sketch:* \
+    Let $epsilon > 0$. Split the integral into... \
+    \
+    *Formal Proof:* \
+    Since $f_n -> f$ a.e. and $|f_n| <= g$...
   given: |
     Let $(X, M, mu)$ be a measure space.
-    Let $f_n: X -> [0, infinity]$ be a sequence of measurable functions such that $f_n -> f$ pointwise almost everywhere.
-    Assume there exists $g in L^1(mu)$ such that $|f_n| <= g$ for all $n$.
+    Let $f_n -> f$ pointwise a.e. and $|f_n| <= g in L^1$.
+  # FIX: Added spaces inside '$' for Display Math (centered and larger)
   to_prove: |
-    $lim_(n->infinity) integral_X f_n d mu = integral_X f d mu$
+    $ lim_(n->infinity) integral f_n d mu = integral f d mu $
   hint: |
-    #hint-box[Apply Fatou's Lemma to the non-negative sequences $g - |f_n - f|$.]
+    Apply Fatou's Lemma to $g - |f_n - f|$.
 
 - id: "ANALYSIS-002"
   year: 2023
   lecturer: "Dr. Cauchy"
   topic: "Real Analysis"
-  technique: "Epsilon of Room"
+  technique: "Epsilon-Delta"
+  cue: 'Did you express $delta$ in terms of $epsilon$?'
+  ghost: |
+    *Scratch Work (Find $delta$):* \
+    \
+    \
+    *Proof:* \
+    Let $epsilon > 0$. Choose $delta = $ #line(length: 3cm, stroke: 0.5pt + gray). \
+    Then for $|x-c| < delta$...
   given: |
-    Let $K subset RR^n$ be a compact set and $U supset K$ be an open set.
+    Prove the limit of the function $f(x) = 2x + 3$ as $x -> 1$.
+  # FIX: Display Math
   to_prove: |
-    There exists a $delta > 0$ such that for all $x in K$, the ball $B(x, delta) subset U$.
+    $ lim_(x->1) (2x+3) = 5 $
   hint: |
-    #hint-box[Consider the continuous function $f(x) = "dist"(x, U^c)$. Use the Extreme Value Theorem.]
+    Start with $|f(x) - 5| < epsilon$ and solve for $|x-1|$.
 
 - id: "ALG-003"
   year: 2024
   lecturer: "Prof. Noether"
   topic: "Abstract Algebra"
-  technique: "Isomorphism Theorems"
+  technique: "Isomorphism"
+  cue: "Is the map well-defined?"
+  ghost: |
+    *Step 1:* Define $psi: G/K -> H$. \
+    *Step 2:* Show $psi$ is a homomorphism. \
+    *Step 3:* Show $psi$ is bijective.
   given: |
-    Let $G$ be a group and $N$ be a normal subgroup of $G$.
-    Let $phi: G -> H$ be a surjective group homomorphism with kernel $K$.
+    $phi: G -> H$ is a surjective homomorphism with kernel $K$.
+  # FIX: Display Math
   to_prove: |
-    $G \/ K iso H$.
+    $ G / K iso H $
   hint: |
-    #hint-box[Define the map $psi(g K) = phi(g)$ and show it is well-defined and bijective.]
+    Use the First Isomorphism Theorem.

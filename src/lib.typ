@@ -1,8 +1,14 @@
 // src/lib.typ
 // The Logic Core & Renderer
 
-#import "utils.typ"
-#let eval-scope = dictionary(utils)
+#import "utils.typ": *
+
+// FIX: Explicitly define the scope to avoid dictionary/module type errors
+#let eval-scope = (
+  img: img, 
+  ddx: ddx, 
+  iso: iso
+)
 
 // --- LOADER FUNCTION ---
 #let get-questions(path, query: (:)) = {
@@ -20,176 +26,135 @@
   })
 }
 
-// --- MAIN RENDERER ---
-#let render-worksheet(questions) = {
-  // 1. Global Typography & Math Settings
-  set text(font: "New Computer Modern", size: 12pt)
-  set math.equation(numbering: none)
-  set par(justify: true)
+// --- DOCUMENT TEMPLATE ---
+#let exam-doc(title: "Real Analysis Exam", body) = {
+  set page(
+    paper: "a4",
+    // 55mm Left Margin (Active), 15mm Right Margin (Safe Zone)
+    margin: (left: 55mm, right: 15mm, top: 20mm, bottom: 20mm),
+    numbering: "1 / 1"
+  )
   
-  // 2. Empty State Guard
+  set text(font: "New Computer Modern", size: 11pt, lang: "en")
+  set par(justify: true)
+
+  align(center)[
+    #text(size: 1.5em, weight: "bold", fill: rgb("#1d3557"))[#title]
+    #v(0.5em)
+    #text(size: 10pt, style: "italic")[Student Name: #line(length: 6cm)  ID: #line(length: 4cm)]
+  ]
+  v(1cm)
+  
+  body
+}
+
+// --- QUESTION RENDERER ---
+#let render-worksheet(questions) = {
   if questions.len() == 0 {
-    align(center + horizon)[
-      #text(size: 14pt, fill: red)[No questions found matching this filter.]
-    ]
+    align(center + horizon, text(fill: red)[No questions found matching this filter.])
     return
   }
 
-  // 3. Main Question Loop
   for (i, q) in questions.enumerate() {
-    // Page Break (Skip on first item)
+    // Always start a new page for each question to maximize space
     if i > 0 { pagebreak() }
-
-    // --- A. The Header Zone (Navy Theme) ---
-    let lecturer = q.at("lecturer", default: "Unknown")
     
-    grid(
-      columns: (1fr, auto),
-      align: (left, horizon),
-      // Title
-      text(weight: "bold", size: 18pt, fill: rgb("#1d3557"))[Question #(i + 1)],
-      // Metadata Pill
-      rect(
-        fill: rgb("#e0fbfc"),
-        radius: 10pt,
-        inset: (x: 12pt, y: 6pt),
-        stroke: none,
-        text(size: 10pt, fill: rgb("#1d3557"), weight: "bold")[#q.year | #lecturer]
-      )
-    )
-    v(0.5em)
+    // -- COMPONENT A: Active Margin --
+    margin-cue[
+      #stack(dir: ttb, spacing: 1em,
+        // 1. Question ID
+        text(size: 14pt, weight: "bold", fill: rgb("#1d3557"))[Q#(i+1)],
+        
+        // 2. Metadata
+        text(size: 8pt, style: "italic", fill: luma(100))[
+          #q.year \ #q.at("lecturer", default: "")
+        ],
 
-    // --- B. The Structured Body (Given / To Prove) ---
-    // Given Block (Blue)
-    if "given" in q {
-      block(
-        width: 100%,
-        fill: rgb("#e0fbfc"),
-        inset: 10pt,
-        radius: (top: 4pt),
-        stroke: (left: 3pt + rgb("#1d3557")),
-        [
-          #text(weight: "bold", fill: rgb("#1d3557"))[Given:] \
-          #eval(q.given, mode: "markup", scope: eval-scope)
-        ]
-      )
-    }
-    
-    // To Prove Block (Yellow)
-    if "to_prove" in q {
-      block(
-        width: 100%,
-        fill: rgb("#fff3b0"),
-        inset: 10pt,
-        radius: (bottom: 4pt),
-        stroke: (left: 3pt + rgb("#ffb703")),
-        [
-          #text(weight: "bold", fill: rgb("#fb8500"))[To Prove:] \
-          #eval(q.to_prove, mode: "markup", scope: eval-scope)
-        ]
-      )
-    }
-    
-    // Legacy support for 'body' field
-    if "body" in q {
-       block(
-        inset: (top: 1em),
-        eval(q.body, mode: "markup", scope: eval-scope)
-      )
-    }
+        // 3. Grading Ladder (Vertical)
+        grading-ladder(max-points: 10),
 
-    v(1em)
+        // 4. Cue / Recall (Only if present)
+        if "cue" in q and q.cue != none {
+          block(
+            width: 100%, 
+            inset: (right: 4pt),
+            stroke: (right: 1pt + rgb("#1d3557")),
+            text(size: 9pt, fill: rgb("#1d3557"))[
+              *Recall:* \ #eval(q.cue, mode: "markup", scope: eval-scope)
+            ]
+          )
+        }
+      )
+    ]
 
-    // --- C. The Analyst's Workbench (New "Margin Note" Layout) ---
+    // -- COMPONENT B: Main Body --
+    // We use a container that fills the page height
     block(
       width: 100%,
-      height: 1fr,
-      // We remove the outer border to let the sections breathe
-      stroke: none, 
-      radius: 4pt,
-      clip: false,
-      grid(
-        rows: (auto, auto, 1fr),
-        columns: (100%),
-        gutter: 1em,
+      height: 100%, // Fill the page
+      stroke: (bottom: 0.5pt + luma(200)),
+      {
+        // 1. Question Header & Given
+        text(weight: "bold")[
+          #if "given" in q and q.given != none {
+             text(fill: rgb("#1d3557"))[Given: ] + eval(q.given, mode: "markup", scope: eval-scope)
+          } else if "body" in q and q.body != none {
+             eval(q.body, mode: "markup", scope: eval-scope)
+          }
+        ]
         
-        // Phase 1: The Active Arsenal
-        // "Boxed, Monospace Font, Active Checklists"
-        block(
-          width: 100%,
-          inset: 12pt,
-          fill: luma(245),
-          stroke: (left: 4pt + rgb("#1d3557")), // Blue left border
-          [
-            #text(size: 10pt, weight: "bold", fill: rgb("#1d3557"), font: "Dejavu Sans Mono")[THE ARSENAL]
-            #v(0.5em)
-            #text(size: 10pt, style: "italic", fill: luma(80))[List the theorems and definitions required. Check assumptions:]
-            #v(0.5em)
-            #text(size: 9pt, font: "Dejavu Sans Mono", fill: luma(100))[
-              [ ] Finite Measure? #h(2em) [ ] Non-negative func? #h(2em) [ ] Compact domain? \
-              [ ] Continuous? #h(4.2em) [ ] Integrable (L1)? #h(3.6em) [ ] Monotone seq?
-            ]
-            #v(1.5em) // Space for student writing
-          ]
-        ),
+        // 2. To Prove (Highlighted)
+        if "to_prove" in q and q.to_prove != none {
+          v(0.5em)
+          block(
+            fill: rgb("#fff9db"), 
+            inset: 8pt, 
+            radius: 4pt, 
+            width: 100%,
+            stroke: (left: 2pt + rgb("#fcc419")),
+            [*To Prove:* #eval(q.to_prove, mode: "markup", scope: eval-scope)]
+          )
+        }
 
-        // Phase 2: The Sketch (Heuristic)
-        // "Light Grey Background, Dashed, Scratch paper feel"
-        block(
-          width: 100%,
-          height: 3cm, // Fixed height for scratchpad
-          fill: luma(250), 
-          inset: 12pt,
-          stroke: (dash: "dashed", paint: luma(150)),
-          [
-            #text(font: "Dejavu Sans Mono", size: 9pt, fill: luma(100))[PROOF SKETCH / HEURISTIC] \
-            #text(style: "italic", size: 10pt, fill: luma(150))[Informal logic. Draw diagrams or outline steps here...]
-          ]
-        ),
+        v(1em)
 
-        // Phase 3: The Formal Proof (Margin Note Layout)
-        // "2/3 + 1/3 Layout with Justification Rail"
+        // 3. EXPANDING ANSWER BOX (Split-Brain)
+        // Uses '1fr' to take up all remaining space on the page
         block(
           width: 100%,
-          height: 100%,
-          // Main container for the proof section
-          stroke: 1pt + luma(200),
-          radius: 2pt,
+          height: 1fr, // MAXIMIZE SPACE
+          stroke: 0.5pt + luma(150),
+          radius: 4pt,
           clip: true,
-          grid(
-            columns: (3fr, 1fr), // 75% Math, 25% Justification
-            rows: (100%),
+          stack(dir: ttb,
             
-            // Left Column: The Prose (The Math)
+            // Zone 1: Scratchpad (Fixed height, ~20%)
             block(
-              height: 100%,
-              inset: 12pt,
+              width: 100%,
+              height: 20%,
+              fill: luma(250),
+              inset: 8pt,
+              stroke: (bottom: (thickness: 0.5pt, paint: luma(150), dash: "dashed")),
               [
-                #text(weight: "bold", size: 11pt, fill: black)[Formal Proof]
-                #v(1em)
-                // Blank space for prose
+                #text(size: 8pt, fill: luma(150), weight: "bold", font: "Dejavu Sans Mono")[SCRATCHPAD]
+                // Clean: No ghost text here
               ]
             ),
             
-            // Right Column: The Justification Rail (Margin Notes)
+            // Zone 2: Formal Proof (Fills remaining)
             block(
-              height: 100%,
-              fill: luma(252), // Very faint grey for the rail
-              stroke: (left: 0.5pt + luma(200)), // Divider line
-              inset: 12pt,
+              width: 100%,
+              height: 1fr, // Takes the rest of the box
+              fill: dot-pattern(),
+              inset: 8pt,
               [
-                #align(right, text(style: "italic", size: 9pt, fill: luma(120))[Justification Rail])
-                #v(1em)
-                #align(right, text(size: 9pt, fill: luma(180))[
-                  _e.g. by DCT_ \
-                  \
-                  _by Triangle Ineq_
-                ])
+                 #text(size: 8pt, fill: luma(150), weight: "bold", font: "Dejavu Sans Mono")[FORMAL PROOF]
+                 // Clean: No ghost text here
               ]
             )
           )
         )
-      )
+      }
     )
   }
 }
@@ -197,33 +162,18 @@
 // --- HINT PAGE RENDERER ---
 #let render-hints(questions) = {
   pagebreak()
-  set text(font: "New Computer Modern")
-  heading(level: 1, numbering: none)[Hints & Techniques]
-  v(1em)
+  heading(level: 1, numbering: none)[Hints & Summary]
   
   table(
     columns: (auto, 1fr, 2fr),
-    align: (center, left, left),
-    inset: 12pt,
-    stroke: 0.5pt + luma(200),
+    inset: 10pt,
     fill: (_, row) => if calc.odd(row) { luma(245) } else { white },
-    
-    table.header(
-      [*#text(fill: rgb("#1d3557"))[Q]*], 
-      [*#text(fill: rgb("#1d3557"))[Technique]*], 
-      [*#text(fill: rgb("#1d3557"))[Hint]*]
-    ),
-    
-    ..questions.enumerate().map(((i, q)) => {
-      (
-        align(center + horizon, text(weight: "bold")[#(i + 1)]),
-        align(horizon, q.at("technique", default: "General")),
-        if "hint" in q {
-           eval(q.hint, mode: "markup", scope: eval-scope)
-        } else {
-           "No hint provided."
-        }
-      )
-    }).flatten()
+    align: (center, left, left),
+    table.header([*Q*], [*Technique*], [*Hint*]),
+    ..questions.enumerate().map(((i, q)) => (
+      [*#(i+1)*],
+      q.at("technique", default: "-"),
+      if "hint" in q and q.hint != none { eval(q.hint, mode: "markup", scope: eval-scope) } else { "" }
+    )).flatten()
   )
 }
