@@ -1,63 +1,62 @@
 # ==========================================
-# ===   CORNELL-TUFTE HYBRID EXAM DATA   ===
+# ===      GENERALIZED EXAM SCHEMA       ===
 # ==========================================
 
 - id: "ANALYSIS-001"
   year: 2024
   lecturer: "Prof. Lebesque"
   topic: "Measure Theory"
-  technique: "Dominated Convergence"
-  cue: "Check assumptions: Finite measure? Non-negative?"
-  ghost: |
-    *Proof Sketch:* \
-    Let $epsilon > 0$. Split the integral into... \
-    \
-    *Formal Proof:* \
-    Since $f_n -> f$ a.e. and $|f_n| <= g$...
   given: |
     Let $(X, M, mu)$ be a measure space.
     Let $f_n -> f$ pointwise a.e. and $|f_n| <= g in L^1$.
-  # FIX: Added spaces inside '$' for Display Math (centered and larger)
   to_prove: |
     $ lim_(n->infinity) integral f_n d mu = integral f d mu $
+  tools: "Fatou's Lemma, Dominated Convergence"
+  common_mistakes: "Forgetting to check if the measure is finite or functions are non-negative."
   hint: |
-    Apply Fatou's Lemma to $g - |f_n - f|$.
+    Apply Fatou's Lemma to the non-negative sequence $g - |f_n - f|$.
+  answer: |
+    Since $|f_n| <= g$ and $g in L^1$, we have $|f_n - f| <= 2g$.
+    Define $h_n = 2g - |f_n - f|$. Note $h_n >= 0$.
+    By Fatou's Lemma:
+    $ integral lim inf h_n <= lim inf integral h_n $
+    Since $f_n -> f$, $h_n -> 2g$. Thus $integral 2g <= lim inf integral (2g - |f_n - f|)$.
+    Subtracting the finite integral of $2g$ yields the result.
 
 - id: "ANALYSIS-002"
   year: 2023
   lecturer: "Dr. Cauchy"
   topic: "Real Analysis"
-  technique: "Epsilon-Delta"
-  cue: 'Did you express $delta$ in terms of $epsilon$?'
-  ghost: |
-    *Scratch Work (Find $delta$):* \
-    \
-    \
-    *Proof:* \
-    Let $epsilon > 0$. Choose $delta = $ #line(length: 3cm, stroke: 0.5pt + gray). \
-    Then for $|x-c| < delta$...
   given: |
     Prove the limit of the function $f(x) = 2x + 3$ as $x -> 1$.
-  # FIX: Display Math
   to_prove: |
     $ lim_(x->1) (2x+3) = 5 $
+  tools: "Epsilon-Delta Definition, Triangle Inequality"
+  common_mistakes: "Expressing $delta$ in terms of $epsilon$ (finding the dependency backwards)."
   hint: |
-    Start with $|f(x) - 5| < epsilon$ and solve for $|x-1|$.
+    Start with $|f(x) - 5| < epsilon$ and simplify to find a relationship with $|x-1|$.
+  answer: |
+    Let $epsilon > 0$. We seek $delta > 0$ such that $0 < |x - 1| < delta => |(2x+3) - 5| < epsilon$.
+    Simplifying the target: $|2x - 2| < epsilon => 2|x - 1| < epsilon => |x - 1| < epsilon / 2$.
+    Choose $delta = epsilon / 2$.
+    Then if $|x - 1| < delta$, we have $|f(x) - 5| = 2|x - 1| < 2(epsilon / 2) = epsilon$. Q.E.D.
 
 - id: "ALG-003"
   year: 2024
   lecturer: "Prof. Noether"
   topic: "Abstract Algebra"
-  technique: "Isomorphism"
-  cue: "Is the map well-defined?"
-  ghost: |
-    *Step 1:* Define $psi: G/K -> H$. \
-    *Step 2:* Show $psi$ is a homomorphism. \
-    *Step 3:* Show $psi$ is bijective.
   given: |
-    $phi: G -> H$ is a surjective homomorphism with kernel $K$.
-  # FIX: Display Math
+    Let $phi: G -> H$ be a surjective homomorphism with kernel $K$.
   to_prove: |
     $ G / K iso H $
+  tools: "First Isomorphism Theorem"
+  common_mistakes: "Failing to show the map is well-defined (independent of representative)."
   hint: |
-    Use the First Isomorphism Theorem.
+    Define a map $psi: G/K -> H$ by $psi(g K) = phi(g)$.
+  answer: |
+    Define $psi: G/K -> H$ by $psi(g K) = phi(g)$.
+    1. Well-defined: If $g K = g' K$, then $g^(-1)g' in K = ker(phi)$, so $phi(g) = phi(g')$.
+    2. Homomorphism: Follows from $phi$ being a homomorphism.
+    3. Surjective: Since $phi$ is surjective.
+    4. Injective: $psi(g K) = e_H => phi(g) = e_H => g in K => g K = K$.
+    Thus $psi$ is an isomorphism.
