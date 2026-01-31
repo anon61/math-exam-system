@@ -1,8 +1,10 @@
-// (The Logic Core - Implementing the 3-Phase Layout)
+// src/lib.typ
+// The Logic Core & Renderer
 
 #import "utils.typ"
 #let eval-scope = dictionary(utils)
 
+// --- LOADER FUNCTION ---
 #let get-questions(path, query: (:)) = {
   let questions = yaml(path)
   return questions.filter(q => {
@@ -18,13 +20,14 @@
   })
 }
 
+// --- MAIN RENDERER ---
 #let render-worksheet(questions) = {
-  // --- 1. Global Typography Settings ---
+  // 1. Global Typography & Math Settings
   set text(font: "New Computer Modern", size: 12pt)
   set math.equation(numbering: none)
   set par(justify: true)
   
-  // --- Empty State Check ---
+  // 2. Empty State Guard
   if questions.len() == 0 {
     align(center + horizon)[
       #text(size: 14pt, fill: red)[No questions found matching this filter.]
@@ -32,9 +35,9 @@
     return
   }
 
-  // --- Main Loop ---
+  // 3. Main Question Loop
   for (i, q) in questions.enumerate() {
-    // Page Break Logic (Skip on first item)
+    // Page Break (Skip on first item)
     if i > 0 { pagebreak() }
 
     // --- A. The Header Zone (Navy Theme) ---
@@ -66,7 +69,7 @@
         radius: (top: 4pt),
         stroke: (left: 3pt + rgb("#1d3557")),
         [
-          #text(weight: "bold", fill: rgb("#1d3557"))[Given:] \ 
+          #text(weight: "bold", fill: rgb("#1d3557"))[Given:] \
           #eval(q.given, mode: "markup", scope: eval-scope)
         ]
       )
@@ -81,72 +84,109 @@
         radius: (bottom: 4pt),
         stroke: (left: 3pt + rgb("#ffb703")),
         [
-          #text(weight: "bold", fill: rgb("#fb8500"))[To Prove:] \ 
+          #text(weight: "bold", fill: rgb("#fb8500"))[To Prove:] \
           #eval(q.to_prove, mode: "markup", scope: eval-scope)
         ]
+      )
+    }
+    
+    // Legacy support for 'body' field
+    if "body" in q {
+       block(
+        inset: (top: 1em),
+        eval(q.body, mode: "markup", scope: eval-scope)
       )
     }
 
     v(1em)
 
-    // --- C. The Analyst's Workbench (3-Phase Answer Grid) ---
+    // --- C. The Analyst's Workbench (New "Margin Note" Layout) ---
     block(
       width: 100%,
       height: 1fr,
-      stroke: 1pt + luma(200),
+      // We remove the outer border to let the sections breathe
+      stroke: none, 
       radius: 4pt,
-      clip: true, // Ensures internal content doesn't overflow border
+      clip: false,
       grid(
-        rows: (auto, 15%, 1fr),
+        rows: (auto, auto, 1fr),
         columns: (100%),
+        gutter: 1em,
         
-        // Phase 1: The Arsenal (Definitions)
+        // Phase 1: The Active Arsenal
+        // "Boxed, Monospace Font, Active Checklists"
         block(
           width: 100%,
-          inset: 8pt,
-          fill: luma(250),
-          stroke: (bottom: 1pt + luma(200)),
+          inset: 12pt,
+          fill: luma(245),
+          stroke: (left: 4pt + rgb("#1d3557")), // Blue left border
           [
-            #text(size: 9pt, weight: "bold", fill: rgb("#1d3557"))[THE ARSENAL: RELEVANT DEFINITIONS & THEOREMS]
-            #v(2em) // Space for student to write
+            #text(size: 10pt, weight: "bold", fill: rgb("#1d3557"), font: "Dejavu Sans Mono")[THE ARSENAL]
+            #v(0.5em)
+            #text(size: 10pt, style: "italic", fill: luma(80))[List the theorems and definitions required. Check assumptions:]
+            #v(0.5em)
+            #text(size: 9pt, font: "Dejavu Sans Mono", fill: luma(100))[
+              [ ] Finite Measure? #h(2em) [ ] Non-negative func? #h(2em) [ ] Compact domain? \
+              [ ] Continuous? #h(4.2em) [ ] Integrable (L1)? #h(3.6em) [ ] Monotone seq?
+            ]
+            #v(1.5em) // Space for student writing
           ]
         ),
 
-        // Phase 2: The Heuristic (Proof Sketch)
+        // Phase 2: The Sketch (Heuristic)
+        // "Light Grey Background, Dashed, Scratch paper feel"
+        block(
+          width: 100%,
+          height: 3cm, // Fixed height for scratchpad
+          fill: luma(250), 
+          inset: 12pt,
+          stroke: (dash: "dashed", paint: luma(150)),
+          [
+            #text(font: "Dejavu Sans Mono", size: 9pt, fill: luma(100))[PROOF SKETCH / HEURISTIC] \
+            #text(style: "italic", size: 10pt, fill: luma(150))[Informal logic. Draw diagrams or outline steps here...]
+          ]
+        ),
+
+        // Phase 3: The Formal Proof (Margin Note Layout)
+        // "2/3 + 1/3 Layout with Justification Rail"
         block(
           width: 100%,
           height: 100%,
-          fill: rgb("#fffbe6"), // Pale Yellow
-          inset: 10pt,
-          stroke: (bottom: (paint: luma(200), thickness: 1pt, dash: "dashed")),
-          [
-            #text(font: "Dejavu Sans Mono", size: 9pt, fill: luma(100))[PROOF SKETCH / HEURISTIC] \ 
-            #text(style: "italic", size: 10pt, fill: luma(150))[Rough ideas... Discretization? Contradiction? Split the domain?]
-          ]
-        ),
-
-        // Phase 3: The Formal Argument (Main Event)
-        grid(
-          columns: (1fr, 4cm),
-          // Left Col: Formal Proof
-          block(
-            inset: 12pt,
-            height: 100%,
-            [
-              #text(weight: "bold", size: 11pt)[Formal Proof] \ 
-              #v(1em)
-              // Empty space for prose
-            ]
-          ),
-          // Right Col: Citations Sidebar
-          block(
-            height: 100%,
-            stroke: (left: 0.5pt + luma(200)),
-            inset: 8pt,
-            fill: luma(253),
-            [
-              #align(center, text(style: "italic", size: 9pt, fill: luma(120))[Citations])
-            ]
+          // Main container for the proof section
+          stroke: 1pt + luma(200),
+          radius: 2pt,
+          clip: true,
+          grid(
+            columns: (3fr, 1fr), // 75% Math, 25% Justification
+            rows: (100%),
+            
+            // Left Column: The Prose (The Math)
+            block(
+              height: 100%,
+              inset: 12pt,
+              [
+                #text(weight: "bold", size: 11pt, fill: black)[Formal Proof]
+                #v(1em)
+                // Blank space for prose
+              ]
+            ),
+            
+            // Right Column: The Justification Rail (Margin Notes)
+            block(
+              height: 100%,
+              fill: luma(252), // Very faint grey for the rail
+              stroke: (left: 0.5pt + luma(200)), // Divider line
+              inset: 12pt,
+              [
+                #align(right, text(style: "italic", size: 9pt, fill: luma(120))[Justification Rail])
+                #v(1em)
+                #align(right, text(size: 9pt, fill: luma(180))[
+                  _e.g. by DCT_ \
+                  \
+                  _by Triangle Ineq_
+                ])
+              ]
+            )
           )
         )
       )
@@ -154,6 +194,7 @@
   }
 }
 
+// --- HINT PAGE RENDERER ---
 #let render-hints(questions) = {
   pagebreak()
   set text(font: "New Computer Modern")
@@ -168,16 +209,20 @@
     fill: (_, row) => if calc.odd(row) { luma(245) } else { white },
     
     table.header(
-      [*#text(fill: rgb("#1d3557"))[Q]*],
-      [*#text(fill: rgb("#1d3557"))[Technique]*],
+      [*#text(fill: rgb("#1d3557"))[Q]*], 
+      [*#text(fill: rgb("#1d3557"))[Technique]*], 
       [*#text(fill: rgb("#1d3557"))[Hint]*]
     ),
     
     ..questions.enumerate().map(((i, q)) => {
       (
         align(center + horizon, text(weight: "bold")[#(i + 1)]),
-        align(horizon, q.technique),
-        eval(q.hint, mode: "markup", scope: eval-scope)
+        align(horizon, q.at("technique", default: "General")),
+        if "hint" in q {
+           eval(q.hint, mode: "markup", scope: eval-scope)
+        } else {
+           "No hint provided."
+        }
       )
     }).flatten()
   )

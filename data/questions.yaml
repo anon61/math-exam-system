@@ -1,5 +1,3 @@
-# (Overwriting with new 'Given/To Prove' Schema)
-
 - id: "ANALYSIS-001"
   year: 2024
   lecturer: "Prof. Lebesque"
@@ -7,10 +5,10 @@
   technique: "Dominated Convergence"
   given: |
     Let $(X, M, mu)$ be a measure space.
-    Let $f_n: X -&gt; [0, infinity]$ be a sequence of measurable functions such that $f_n -&gt; f$ pointwise almost everywhere.
-    Assume there exists $g in L^1(mu)$ such that $|f_n| &lt;= g$ for all $n$.
+    Let $f_n: X -> [0, infinity]$ be a sequence of measurable functions such that $f_n -> f$ pointwise almost everywhere.
+    Assume there exists $g in L^1(mu)$ such that $|f_n| <= g$ for all $n$.
   to_prove: |
-    $lim_(n-&gt;infinity) integral_X f_n d mu = integral_X f d mu$
+    $lim_(n->infinity) integral_X f_n d mu = integral_X f d mu$
   hint: |
     #hint-box[Apply Fatou's Lemma to the non-negative sequences $g - |f_n - f|$.]
 
@@ -22,7 +20,7 @@
   given: |
     Let $K subset RR^n$ be a compact set and $U supset K$ be an open set.
   to_prove: |
-    There exists a $delta &gt; 0$ such that for all $x in K$, the ball $B(x, delta) subset U$.
+    There exists a $delta > 0$ such that for all $x in K$, the ball $B(x, delta) subset U$.
   hint: |
     #hint-box[Consider the continuous function $f(x) = "dist"(x, U^c)$. Use the Extreme Value Theorem.]
 
@@ -33,8 +31,8 @@
   technique: "Isomorphism Theorems"
   given: |
     Let $G$ be a group and $N$ be a normal subgroup of $G$.
-    Let $phi: G -&gt; H$ be a surjective group homomorphism with kernel $K$.
+    Let $phi: G -> H$ be a surjective group homomorphism with kernel $K$.
   to_prove: |
-    $G \/ K ~= H$.
+    $G \/ K iso H$.
   hint: |
     #hint-box[Define the map $psi(g K) = phi(g)$ and show it is well-defined and bijective.]
