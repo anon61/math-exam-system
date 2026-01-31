@@ -3,15 +3,17 @@
 
 #import "utils.typ": *
 
-// FIX: 
-// 1. Added 'subseteq: sym.subset.eq' (fixes missing variable error).
-// 2. Added 'sect: sym.inter' (fixes deprecation warning).
+// FIX: Comprehensive scope definition to handle all symbols used in YAML
 #let eval-scope = (
   img: img, 
   ddx: ddx, 
   iso: iso, 
   subseteq: sym.subset.eq,
-  sect: sym.inter
+  sect: sym.inter,
+  setminus: sym.without,
+  iff: sym.arrow.l.r.double,
+  implies: sym.arrow.r.double,
+  supp: math.op("supp")
 )
 
 // --- LOADER ---
