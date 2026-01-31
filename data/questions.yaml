@@ -1,61 +1,40 @@
-# ==========================================
-# ===    MOCK DATA STRESS TEST SUITE     ===
-# ==========================================
+# (Overwriting with new 'Given/To Prove' Schema)
 
-- id: "TEST-001-MATH"
+- id: "ANALYSIS-001"
   year: 2024
-  lecturer: "Prof. Stress"
-  topic: "Calculus"
-  technique: "Chain Rule"
-  # TEST: Standard Math Rendering
-  body: |
-    Calculate the derivative of the following function:
-    $ f(x) = sqrt(x^2 + 1) / e^(2x) $
-  
-  # TEST: Custom #hint-box function from utils.typ
+  lecturer: "Prof. Lebesque"
+  topic: "Measure Theory"
+  technique: "Dominated Convergence"
+  given: |
+    Let $(X, M, mu)$ be a measure space.
+    Let $f_n: X -&gt; [0, infinity]$ be a sequence of measurable functions such that $f_n -&gt; f$ pointwise almost everywhere.
+    Assume there exists $g in L^1(mu)$ such that $|f_n| &lt;= g$ for all $n$.
+  to_prove: |
+    $lim_(n-&gt;infinity) integral_X f_n d mu = integral_X f d mu$
   hint: |
-    #hint-box[
-      Don't forget to use the Quotient Rule: $ (u/v)' = (u'v - uv') / v^2 $
-    ]
+    #hint-box[Apply Fatou's Lemma to the non-negative sequences $g - |f_n - f|$.]
 
-- id: "TEST-002-SCOPE"
-  year: 2024
-  lecturer: "Dr. Scope"
-  topic: "Calculus"
-  technique: "Implicit Differentiation"
-  # TEST: Using the custom #ddx macro defined in utils.typ
-  body: |
-    Given the equation $x^2 + y^2 = 25$, find #ddx($y$).
-    
-    *Instructions:*
-    - Treat $y$ as a function of $x$.
-    - Isolate $y'$.
-  hint: |
-    Remember that #ddx($y^2$) is $2y y'$.
-
-- id: "TEST-003-LAYOUT"
+- id: "ANALYSIS-002"
   year: 2023
-  lecturer: "Prof. Long"
-  topic: "Logic"
-  technique: "Truth Tables"
-  # TEST: Long text to check if Answer Box shrinks correctly
-  body: |
-    Consider the following three statements:
-    1. If it rains, the ground is wet.
-    2. The ground is not wet.
-    3. Therefore, it did not rain.
-    
-    Construct a truth table to determine if this argument is valid.
-    Explain the difference between *Modus Ponens* and *Modus Tollens*.
+  lecturer: "Dr. Cauchy"
+  topic: "Real Analysis"
+  technique: "Epsilon of Room"
+  given: |
+    Let $K subset RR^n$ be a compact set and $U supset K$ be an open set.
+  to_prove: |
+    There exists a $delta &gt; 0$ such that for all $x in K$, the ball $B(x, delta) subset U$.
   hint: |
-    This is an example of *Modus Tollens*.
+    #hint-box[Consider the continuous function $f(x) = "dist"(x, U^c)$. Use the Extreme Value Theorem.]
 
-- id: "TEST-004-FILTER"
-  year: 2020
-  lecturer: "Old Professor"
-  topic: "History"
-  technique: "Memorization"
-  body: |
-    This question is from 2020. It should NOT appear if you filter for `year: 2024`.
+- id: "ALG-003"
+  year: 2024
+  lecturer: "Prof. Noether"
+  topic: "Abstract Algebra"
+  technique: "Isomorphism Theorems"
+  given: |
+    Let $G$ be a group and $N$ be a normal subgroup of $G$.
+    Let $phi: G -&gt; H$ be a surjective group homomorphism with kernel $K$.
+  to_prove: |
+    $G \/ K ~= H$.
   hint: |
-    No hint needed.
+    #hint-box[Define the map $psi(g K) = phi(g)$ and show it is well-defined and bijective.]

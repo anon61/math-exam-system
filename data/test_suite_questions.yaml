@@ -1,0 +1,51 @@
+# Test data for the full test suite.
+
+# A standard, complete question.
+- id: "VALID-001"
+  year: 2024
+  lecturer: "Dr. Test"
+  topic: "Testing"
+  technique: "Assertions"
+  given: |
+    This is a valid question.
+  to_prove: |
+    It renders correctly.
+  hint: |
+    This is a hint.
+
+# A question with a different year for filtering.
+- id: "FILTER-2022"
+  year: 2022
+  lecturer: "Dr. Filter"
+  topic: "Filtering"
+  technique: "Queries"
+  given: |
+    This question is from 2022.
+  to_prove: |
+    You can find me by filtering for `year: 2022`.
+  hint: |
+    Use a query.
+
+# A question with a missing hint (should not crash).
+- id: "MISSING-HINT"
+  year: 2024
+  lecturer: "Dr. Test"
+  topic: "Robustness"
+  technique: "Default Values"
+  given: |
+    This question has no `hint` field.
+  to_prove: |
+    The `render-hints` function should handle this gracefully.
+
+# A question with a missing to_prove field.
+- id: "MISSING-PROVE"
+  year: 2024
+  lecturer: "Dr. Test"
+  topic: "Robustness"
+  technique: "Conditionals"
+  given: |
+    This question only has a `given` field.
+  to_prove: |
+    
+  hint: |
+    This hint should still render.
