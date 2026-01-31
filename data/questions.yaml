@@ -12,16 +12,36 @@
   to_prove: |
     $ lim_(n->infinity) integral f_n d mu = integral f d mu $
   tools: "Fatou's Lemma, Dominated Convergence"
-  common_mistakes: "Forgetting to check if the measure is finite or functions are non-negative."
+  common_mistakes: "Forgetting non-negativity check."
   hint: |
-    Apply Fatou's Lemma to the non-negative sequence $g - |f_n - f|$.
-  answer: |
-    Since $|f_n| <= g$ and $g in L^1$, we have $|f_n - f| <= 2g$.
-    Define $h_n = 2g - |f_n - f|$. Note $h_n >= 0$.
-    By Fatou's Lemma:
-    $ integral lim inf h_n <= lim inf integral h_n $
-    Since $f_n -> f$, $h_n -> 2g$. Thus $integral 2g <= lim inf integral (2g - |f_n - f|)$.
-    Subtracting the finite integral of $2g$ yields the result.
+    Apply Fatou's Lemma to $g - |f_n - f|$.
+
+  # The graph will be generated from these TITLES:
+  answer_steps:
+    - type: setup
+      title: "Triangle Ineq. Bound"
+      content: "Since $|f_n| <= g$ and $g in L^1$, by the triangle inequality, we have $|f_n - f| <= |f_n| + |f| <= 2g$."
+    
+    - type: claim
+      title: "Construct Non-Negative"
+      content: "The sequence $h_n = 2g - |f_n - f|$ is non-negative."
+      proof: "Since $|f_n - f| <= 2g$, it follows that $2g - |f_n - f| >= 0$. Thus Fatou's Lemma applies to $h_n$."
+
+    - type: calculation
+      title: "Apply Fatou's Lemma"
+      content: |
+        $ integral 2g <= lim inf integral (2g - |f_n - f|) $
+        $ integral 2g <= integral 2g - lim sup integral |f_n - f| $
+
+    - type: step
+      title: "Simplification"
+      content: "Subtracting the finite integral $integral 2g$ from both sides (valid since $g in L^1$):"
+    
+    - type: conclusion
+      title: "Final Result"
+      content: |
+        $ 0 <= - lim sup integral |f_n - f| => lim sup integral |f_n - f| <= 0 $
+        Since the integral of absolute value is non-negative, the limit is 0. Q.E.D.
 
 - id: "ANALYSIS-002"
   year: 2023
@@ -31,15 +51,33 @@
     Prove the limit of the function $f(x) = 2x + 3$ as $x -> 1$.
   to_prove: |
     $ lim_(x->1) (2x+3) = 5 $
-  tools: "Epsilon-Delta Definition, Triangle Inequality"
-  common_mistakes: "Expressing $delta$ in terms of $epsilon$ (finding the dependency backwards)."
+  tools: "Epsilon-Delta Definition"
+  common_mistakes: "Backwards dependency."
   hint: |
-    Start with $|f(x) - 5| < epsilon$ and simplify to find a relationship with $|x-1|$.
-  answer: |
-    Let $epsilon > 0$. We seek $delta > 0$ such that $0 < |x - 1| < delta => |(2x+3) - 5| < epsilon$.
-    Simplifying the target: $|2x - 2| < epsilon => 2|x - 1| < epsilon => |x - 1| < epsilon / 2$.
-    Choose $delta = epsilon / 2$.
-    Then if $|x - 1| < delta$, we have $|f(x) - 5| = 2|x - 1| < 2(epsilon / 2) = epsilon$. Q.E.D.
+    Start with $|f(x) - 5| < epsilon$.
+  
+  answer_steps:
+    - type: setup
+      title: "Definitions"
+      content: "Let $epsilon > 0$. We must find $delta > 0$ such that $0 < |x - 1| < delta => |f(x) - 5| < epsilon$."
+    
+    - type: calculation
+      title: "Factorization"
+      content: |
+        $ |(2x + 3) - 5| = |2x - 2| = 2|x - 1| $
+    
+    - type: step
+      title: "Requirement"
+      content: "We want this quantity to be less than $epsilon$. Thus we need $2|x - 1| < epsilon$, or $|x - 1| < epsilon / 2$."
+
+    - type: claim
+      title: "Choose Delta"
+      content: "Choose $delta = epsilon / 2$."
+      proof: "This choice directly satisfies the inequality derived above."
+
+    - type: conclusion
+      title: "Verification"
+      content: "If $|x - 1| < delta$, then $|f(x) - 5| = 2|x - 1| < 2(epsilon/2) = epsilon$. Q.E.D."
 
 - id: "ALG-003"
   year: 2024
@@ -50,13 +88,32 @@
   to_prove: |
     $ G / K iso H $
   tools: "First Isomorphism Theorem"
-  common_mistakes: "Failing to show the map is well-defined (independent of representative)."
+  common_mistakes: "Well-definedness."
   hint: |
-    Define a map $psi: G/K -> H$ by $psi(g K) = phi(g)$.
-  answer: |
-    Define $psi: G/K -> H$ by $psi(g K) = phi(g)$.
-    1. Well-defined: If $g K = g' K$, then $g^(-1)g' in K = ker(phi)$, so $phi(g) = phi(g')$.
-    2. Homomorphism: Follows from $phi$ being a homomorphism.
-    3. Surjective: Since $phi$ is surjective.
-    4. Injective: $psi(g K) = e_H => phi(g) = e_H => g in K => g K = K$.
-    Thus $psi$ is an isomorphism.
+    Define $psi: G/K -> H$.
+  
+  answer_steps:
+    - type: setup
+      title: "Define Map"
+      content: "Define the map $psi: G/K -> H$ by $psi(g K) = phi(g)$."
+
+    - type: claim
+      title: "Well-Defined"
+      content: "The map $psi$ does not depend on the choice of representative $g$."
+      proof: "Suppose $g_1 K = g_2 K$. Then $g_2^(-1) g_1 in K = ker(phi)$. Thus $phi(g_2^(-1) g_1) = e_H$, which implies $phi(g_1) = phi(g_2)$. So $psi(g_1 K) = psi(g_2 K)$."
+
+    - type: claim
+      title: "Homomorphism"
+      content: "$psi$ is a homomorphism."
+      proof: "$psi((x K)(y K)) = psi(x y K) = phi(x y) = phi(x)phi(y) = psi(x K)psi(y K)$."
+
+    - type: claim
+      title: "Bijectivity"
+      content: "$psi$ is both injective and surjective."
+      proof: |
+        1. Surjective: Since $phi$ is surjective, for any $h in H$, exists $g$ such that $phi(g)=h$. Thus $psi(g K)=h$.
+        2. Injective: $psi(g K) = e_H => phi(g) = e_H => g in K => g K = K$ (the identity in $G/K$).
+
+    - type: conclusion
+      title: "Isomorphism"
+      content: "Since $psi$ is a bijective homomorphism, it is an isomorphism. $G/K iso H$."
