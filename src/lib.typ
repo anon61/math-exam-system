@@ -3,7 +3,16 @@
 
 #import "utils.typ": *
 
-#let eval-scope = (img: img, ddx: ddx, iso: iso)
+// FIX: 
+// 1. Added 'subseteq: sym.subset.eq' (fixes missing variable error).
+// 2. Added 'sect: sym.inter' (fixes deprecation warning).
+#let eval-scope = (
+  img: img, 
+  ddx: ddx, 
+  iso: iso, 
+  subseteq: sym.subset.eq,
+  sect: sym.inter
+)
 
 // --- LOADER ---
 #let get-questions(path, query: (:)) = {
@@ -35,7 +44,7 @@
   align(center)[
     #text(size: 1.5em, weight: "bold", fill: rgb("#1d3557"))[#title]
     #v(0.5em)
-    #text(size: 10pt, style: "italic")[Student Name: #line(length: 6cm)  ID: #line(length: 4cm)]
+    #text(size: 10pt, style: "italic")[Student Name: #line(length: 6cm)   ID: #line(length: 4cm)]
   ]
   v(1cm)
   
@@ -69,7 +78,7 @@
           width: 100%, stroke: (bottom: 0.5pt + luma(200)), inset: (bottom: 1em),
           {
              text(weight: "bold")[
-              #if "given" in q and q.given != none {
+               #if "given" in q and q.given != none {
                  text(fill: rgb("#1d3557"))[Given: ] + eval(q.given, mode: "markup", scope: eval-scope)
               }
              ]
@@ -199,6 +208,7 @@
         }
       }
     }
-    v(1fr); align(right)[$square.filled$]
+    v(1fr);
+    align(right)[$square.filled$]
   }
 }
