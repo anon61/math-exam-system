@@ -1,12 +1,12 @@
 // main.typ
 // This is the main entry point for rendering a specific exam PDF.
 
-#import "src/lib.typ": get-questions, render-worksheet
+#import "src/lib.typ": get-questions, render-worksheet, render-hints
 
 // --- Configuration ---
 // Define a query to filter the question database.
-// This will select all questions where the year is 2024 AND the topic is "Calculus".
-#let filter = (year: 2024, topic: "Calculus")
+// An empty filter selects all questions.
+#let filter = (:) 
 
 // --- Execution ---
 // 1. Load questions from the YAML database using the filter.
@@ -14,3 +14,6 @@
 
 // 2. Render the filtered questions into a worksheet.
 #render-worksheet(questions)
+
+// 3. Render the hints page at the end of the document.
+#render-hints(questions)

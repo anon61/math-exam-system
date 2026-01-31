@@ -13,4 +13,4 @@
 )
 
 // A mathematical helper for rendering a derivative.
-#let ddx(f) = $ frac(d, dx) #f $
+#let ddx(f) = $ frac(d, "dx") #f $

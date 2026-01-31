@@ -5,22 +5,14 @@
 #import "utils.typ"
 
 // CRITICAL: Create a scope dictionary from the `utils` module.
-// This allows us to pass our custom functions (`ddx`, `hint-box`, etc.)
-// into the `eval()` function for use within the YAML strings.
 #let eval-scope = dictionary(utils)
 
 // Loads and filters the question database.
 #let get-questions(path, query: (:)) = {
-  // Load the entire question bank from the YAML file.
   let questions = yaml(path)
-
-  // Filter the questions based on the provided query.
-  // The query is a dictionary where keys are metadata fields (e.g., "year")
-  // and values are the desired match (e.g., 2024).
   return questions.filter(q => {
-    var passes = true
+    let passes = true
     if query.len() == 0 { return true }
-
     for (key, value) in query {
       if q.at(key, default: none) != value {
         passes = false
@@ -31,32 +23,80 @@
   })
 }
 
-// Renders a list of questions into a worksheet format.
+// Renders a list of questions into a professional worksheet format.
 #let render-worksheet(questions) = {
-  // Display the number of questions found.
-  heading(level: 1, numbering: none)[Worksheet]
-  text(size: 8pt)[Generated on #datetime.today().display() with #questions.len() questions.]
-  
-  // Use a numbered list for the questions.
-  counter(heading).update(0)
   counter("worksheet-q").update(0)
 
-  for q in questions {
-    // Increment question counter and display in a heading.
-    pagebreak(weak: true)
-    heading(level: 2, numbering: "1.", "Question #" + str(counter("worksheet-q").step()))
+  for (i, q) in questions.enumerate() {
+    // FIX: Only pagebreak AFTER the first question.
+    if i > 0 { pagebreak() }
 
-    // The core of the system:
-    // Evaluate the Typst string from the YAML file's 'body' field.
-    // We MUST pass the `eval-scope` so it knows what `ddx` means.
-    eval(q.body, mode: "markup", scope: eval-scope)
+    // --- Question Header ---
+    // Uses a grid to align the title and metadata badges.
+    let lecturer = q.at("lecturer", default: "N/A")
+    grid(
+      columns: (1fr, auto),
+      align: (left, bottom),
+      // Left side: Question Title
+      heading(level: 2, numbering: "1.", ["Question ", counter("worksheet-q").step()]),
+      // Right side: Metadata Badges
+      block(
+        inset: (bottom: 4pt),
+        text(size: 9pt)[
+          #rect(
+            fill: luma(230),
+            radius: 4pt,
+            inset: 5pt,
+            "#{q.year} | #{lecturer}"
+          )
+        ]
+      )
+    )
 
-    // Also evaluate the 'hint' field.
-    eval(q.hint, mode: "markup", scope: eval-scope)
+    // --- Question Body ---
+    // A block provides spacing and a container for the question content.
+    block(
+      inset: (top: 1em, bottom: 2em),
+      eval(q.body, mode: "markup", scope: eval-scope)
+    )
 
-    // Display metadata for reference.
-    align(right, text(size: 7pt, fill: gray)[
-      ID: #q.id | Year: #q.year | Topic: #q.topic
-    ])
+    // --- Answer Area ---
+    // A block with a 1pt stroke defines the main answer box.
+    // `height: 1fr` makes it fill the remaining vertical space on the page.
+    block(
+        width: 100%,
+        height: 1fr,
+        stroke: 1pt + luma(200),
+        // Top section for planning work.
+        rect(
+            width: 100%,
+            fill: luma(240),
+            inset: 8pt,
+            text(weight: "bold")["Strategy / Key Concepts"]
+        )
+    )
   }
+}
+
+// Renders a summary page with hints for all questions.
+#let render-hints(questions) = {
+  pagebreak()
+  heading(level: 1, numbering: none)[Hints & Techniques]
+
+  // A table to neatly organize the hints.
+  table(
+    columns: (auto, 1fr, 2fr),
+    align: (center, left, left),
+    stroke: .5pt,
+    [*Question*], [*Technique*], [*Hint*],
+    ..questions.enumerate().map(((i, q)) => {
+      let fixed_hint = q.hint.replace("uv'", "u v'").replace("u'v", "u' v")
+      return (
+        align(center, str(i + 1)),
+        q.technique,
+        // Hints can contain Typst markup, so they must be evaluated.
+        eval(fixed_hint, mode: "markup", scope: eval-scope)
+      )
+    }).flatten()
+  )
 }

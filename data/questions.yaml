@@ -1,44 +1,61 @@
-# data/questions.yaml
-# This is the "Question Bank" for the exam system.
-# It uses YAML Literal Block Scalars (|) to allow raw Typst markup.
+# ==========================================
+# ===    MOCK DATA STRESS TEST SUITE     ===
+# ==========================================
 
-- id: "calc-001"
+- id: "TEST-001-MATH"
   year: 2024
-  lecturer: "Prof. Integra"
+  lecturer: "Prof. Stress"
   topic: "Calculus"
-  technique: "Differentiation"
+  technique: "Chain Rule"
+  # TEST: Standard Math Rendering
   body: |
-    Calculate the derivative of the function $f(x) = x^3 + 2x^2 - 5$.
-    Use the power rule, which states #ddx($x^n$) $= n x^(n-1)$.
+    Calculate the derivative of the following function:
+    $ f(x) = sqrt(x^2 + 1) / e^(2x) $
+  
+  # TEST: Custom #hint-box function from utils.typ
   hint: |
     #hint-box[
-      Remember to apply the power rule to each term of the polynomial separately.
+      Don't forget to use the Quotient Rule: $ (u/v)' = (u'v - uv') / v^2 $
     ]
 
-- id: "alg-001"
-  year: 2023
-  lecturer: "Dr. Matrix"
-  topic: "Algebra"
-  technique: "Linear Equations"
-  body: |
-    Solve the following system of linear equations:
-    $ 2x + y = 5 $
-    $ x - 3y = -1 $
-  hint: |
-    #hint-box[
-      You can use either substitution or elimination. For substitution, solve one equation for `x` or `y` and plug it into the other.
-    ]
-
-- id: "logic-001"
+- id: "TEST-002-SCOPE"
   year: 2024
-  lecturer: "Prof. Boole"
+  lecturer: "Dr. Scope"
+  topic: "Calculus"
+  technique: "Implicit Differentiation"
+  # TEST: Using the custom #ddx macro defined in utils.typ
+  body: |
+    Given the equation $x^2 + y^2 = 25$, find #ddx($y$).
+    
+    *Instructions:*
+    - Treat $y$ as a function of $x$.
+    - Isolate $y'$.
+  hint: |
+    Remember that #ddx($y^2$) is $2y y'$.
+
+- id: "TEST-003-LAYOUT"
+  year: 2023
+  lecturer: "Prof. Long"
   topic: "Logic"
   technique: "Truth Tables"
+  # TEST: Long text to check if Answer Box shrinks correctly
   body: |
-    Construct a truth table for the logical expression $(P and Q)$ => $R$.
-
-    #img("truth-table-template.svg")
+    Consider the following three statements:
+    1. If it rains, the ground is wet.
+    2. The ground is not wet.
+    3. Therefore, it did not rain.
+    
+    Construct a truth table to determine if this argument is valid.
+    Explain the difference between *Modus Ponens* and *Modus Tollens*.
   hint: |
-    #hint-box[
-      Your table should have columns for $P$, $Q$, $R$, $P and Q$, and finally the full expression. There will be $2^3 = 8$ rows.
-    ]
+    This is an example of *Modus Tollens*.
+
+- id: "TEST-004-FILTER"
+  year: 2020
+  lecturer: "Old Professor"
+  topic: "History"
+  technique: "Memorization"
+  body: |
+    This question is from 2020. It should NOT appear if you filter for `year: 2024`.
+  hint: |
+    No hint needed.
