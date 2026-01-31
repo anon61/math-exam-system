@@ -25,6 +25,13 @@
 
 // Renders a list of questions into a professional worksheet format.
 #let render-worksheet(questions) = {
+  if questions.len() == 0 {
+    align(center + horizon)[
+      #text(size: 14pt, fill: red)[No questions found matching this filter.]
+    ]
+    return // Stop rendering
+  }
+
   counter("worksheet-q").update(0)
 
   for (i, q) in questions.enumerate() {
@@ -38,7 +45,7 @@
       columns: (1fr, auto),
       align: (left, bottom),
       // Left side: Question Title
-      heading(level: 2, numbering: "1.", ["Question ", counter("worksheet-q").step()]),
+      text(size: 16pt, weight: "bold")[Question #(i + 1)],
       // Right side: Metadata Badges
       block(
         inset: (bottom: 4pt),
@@ -47,7 +54,7 @@
             fill: luma(230),
             radius: 4pt,
             inset: 5pt,
-            "#{q.year} | #{lecturer}"
+            [ #q.year | #lecturer ]
           )
         ]
       )
@@ -87,6 +94,7 @@
   table(
     columns: (auto, 1fr, 2fr),
     align: (center, left, left),
+    inset: 10pt,
     stroke: .5pt,
     [*Question*], [*Technique*], [*Hint*],
     ..questions.enumerate().map(((i, q)) => {
