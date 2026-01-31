@@ -1,0 +1,44 @@
+# data/questions.yaml
+# This is the "Question Bank" for the exam system.
+# It uses YAML Literal Block Scalars (|) to allow raw Typst markup.
+
+- id: "calc-001"
+  year: 2024
+  lecturer: "Prof. Integra"
+  topic: "Calculus"
+  technique: "Differentiation"
+  body: |
+    Calculate the derivative of the function $f(x) = x^3 + 2x^2 - 5$.
+    Use the power rule, which states #ddx($x^n$) $= n x^(n-1)$.
+  hint: |
+    #hint-box[
+      Remember to apply the power rule to each term of the polynomial separately.
+    ]
+
+- id: "alg-001"
+  year: 2023
+  lecturer: "Dr. Matrix"
+  topic: "Algebra"
+  technique: "Linear Equations"
+  body: |
+    Solve the following system of linear equations:
+    $ 2x + y = 5 $
+    $ x - 3y = -1 $
+  hint: |
+    #hint-box[
+      You can use either substitution or elimination. For substitution, solve one equation for `x` or `y` and plug it into the other.
+    ]
+
+- id: "logic-001"
+  year: 2024
+  lecturer: "Prof. Boole"
+  topic: "Logic"
+  technique: "Truth Tables"
+  body: |
+    Construct a truth table for the logical expression $(P and Q)$ => $R$.
+
+    #img("truth-table-template.svg")
+  hint: |
+    #hint-box[
+      Your table should have columns for $P$, $Q$, $R$, $P and Q$, and finally the full expression. There will be $2^3 = 8$ rows.
+    ]
