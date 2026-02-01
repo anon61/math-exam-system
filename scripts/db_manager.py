@@ -110,3 +110,32 @@ class DBManager:
                 if node_id in storage_dict:
                     del storage_dict[node_id]
                 break
+
+    def update_node_id(self, old_id: str, new_id: str):
+        if old_id not in self.nodes:
+            raise ValueError(f"Node with ID '{old_id}' not found.")
+        if new_id in self.nodes:
+            raise ValueError(f"Node with ID '{new_id}' already exists.")
+
+        # Update the node's ID itself
+        node_to_update = self.nodes.pop(old_id)
+        node_to_update.id = new_id
+        self.nodes[new_id] = node_to_update
+
+        # Update the type-specific dictionary
+        for _, (cls, storage_dict) in self._type_map.items():
+            if isinstance(node_to_update, cls):
+                if old_id in storage_dict:
+                    del storage_dict[old_id]
+                    storage_dict[new_id] = node_to_update
+                break
+
+        # Update all references to the old ID
+        for node in self.nodes.values():
+            for field_name, field_value in node.__dict__.items():
+                if isinstance(field_value, list):
+                    if old_id in field_value:
+                        # Replace all occurrences
+                        node.__dict__[field_name] = [new_id if item == old_id else item for item in field_value]
+                elif field_name.endswith("_ref") and field_value == old_id:
+                    node.__dict__[field_name] = new_id
