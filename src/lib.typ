@@ -2,6 +2,8 @@
 
 // --- CONFIGURATION ---
 #let show_solutions = state("solutions", true) // Toggle to false to hide answers
+#let dark_blue = rgb("#003366")
+#let dark_green = rgb("#004400")
 
 // 1. LOAD THE DATABASE
 #let questions = yaml("../data/questions.yaml")
@@ -92,70 +94,65 @@
 #let question(id) = {
   if id in KB.questions {
     let q = KB.questions.at(id)
-    
-    // Visual Container
-    block(
-      width: 100%,
-      stroke: 1pt + rgb("#003366"), // Academic Blue
-      radius: 4pt,
-      inset: 12pt,
-      below: 1em,
-      breakable: false, 
-      [
-        // Header: Topic + Metadata
-        #grid(
-          columns: (1fr, auto),
-          align(left)[#text(fill: rgb("#003366"), weight: "bold")[#q.topic]],
-          align(right)[#text(style: "italic", fill: luma(100))[#q.year | #q.lecturer]]
-        )
-        #line(length: 100%, stroke: 0.5pt + luma(200))
-        #v(5pt)
 
-        // Section: Given
-        #if "given" in q and q.given != none [
-          #strong[Given:]
-          #pad(left: 1em)[#eval(q.given, mode: "markup", scope: eval-scope)]
+    block(width: 100%, breakable: true, {
+      // 1. Header (Topic | Year | Lecturer)
+      grid(
+        columns: (1fr, 1fr),
+        align(left)[
+          #text(weight: "bold", fill: dark_blue, size: 1.1em)[#q.topic]
+        ],
+        align(right)[
+          #text(style: "italic", fill: gray)[#q.year | #q.lecturer]
         ]
+      )
+      line(length: 100%, stroke: 0.5pt + gray)
 
-        // Section: To Prove
-        #if "to_prove" in q and q.to_prove != none [
-          #strong[To Prove:]
-          #pad(left: 1em)[#eval(q.to_prove, mode: "markup", scope: eval-scope)]
-        ]
-
-        // Section: Hint
-        #if "hint" in q and q.hint != none and q.hint != "" [
-          #v(5pt)
-          #block(
-            fill: luma(245), 
-            inset: 8pt, 
-            radius: 2pt, 
-            width: 100%,
-            text(size: 0.9em, style: "italic", fill: luma(80))[
-              *Hint:* #eval(q.hint, mode: "markup", scope: eval-scope)
-            ]
-          )
-        ]
-
-        // E. Solutions (Conditional Render)
-        #context if show_solutions.get() and "answer_steps" in q and q.answer_steps != none {
-          block(
-            width: 100%,
-            inset: (top: 10pt),
-            stroke: (top: 1pt + luma(200)),
-            [
-              #text(fill: rgb("#004400"), weight: "bold")[Official Solution:]
-              #for step in q.answer_steps [
-                #pad(left: 1em, top: 0.5em)[
-                  #strong[#step.title] (#text(style: "italic")[#step.type]) \
-                  #eval(step.content, mode: "markup", scope: eval-scope)
-                ]
-              ]
-            ]
-          )
-        }
+      // 2. Given
+      pad(left: 0.5em, top: 0.5em)[
+        *Given:* \
+        #pad(left: 1em)[#eval(q.given, mode: "markup", scope: eval-scope)]
       ]
-    )
+
+      // === NEW: IMAGE RENDERING BLOCK ===
+      // Checks if the 'image' field exists and is not empty
+      context if q.at("image", default: none) != none {
+        pad(y: 1em, align(center)[
+          // We use absolute path from Project Root
+          #image("/data/images/" + q.image, width: 60%)
+        ])
+      }
+      // ==================================
+
+      // 3. To Prove
+      pad(left: 0.5em, top: 0.5em)[
+        *To Prove:* \
+        #pad(left: 1em)[#eval(q.to_prove, mode: "markup", scope: eval-scope)]
+      ]
+
+      // 4. Hint (Optional)
+      if q.at("hint", default: none) != none {
+        pad(top: 0.5em)[
+          #block(fill: luma(245), inset: 8pt, radius: 4pt, width: 100%)[
+            *Hint:* #text(style: "italic")[#q.hint]
+          ]
+        ]
+      }
+
+      // 5. Official Solution (Hidden/Shown based on toggle)
+      context if show_solutions.get() {
+        v(1em)
+        block(stroke: (left: 2pt + dark_green), inset: (left: 1em))[
+          #text(fill: dark_green, weight: "bold")[Official Solution:]
+          #v(0.5em)
+          #for step in q.answer_steps {
+            [*#step.title* _(#step.type)_]
+            pad(left: 1em)[#eval(step.content, mode: "markup", scope: eval-scope)]
+            v(0.5em)
+          }
+        ]
+      }
+    })
   } else {
     text(fill: red)[Unknown Question ID: #id]
   }
