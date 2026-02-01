@@ -40,18 +40,9 @@ class TestAssessmentEngine(unittest.TestCase):
               title: "Find Delta"
               content: "delta = epsilon/3"
         """
-        
-        # This mock now simulates the file-loading logic of DBManager more accurately.
-        # It ensures that only 'questions.yaml' returns the mock data.
-        m = mock_open(read_data=mock_yaml)
-        def open_side_effect(path, *args, **kwargs):
-            if str(path).endswith("questions.yaml"):
-                return m(path, *args, **kwargs)
-            else:
-                # For all other files, return an empty file
-                return mock_open(read_data="")(path, *args, **kwargs)
-
-        with patch("builtins.open", side_effect=open_side_effect):
+        # We only need to mock 'open' and 'exists'. 
+        # The DBManager uses explicit filenames, so no glob mocking is required.
+        with patch("builtins.open", mock_open(read_data=mock_yaml)):
             with patch("pathlib.Path.exists", return_value=True):
                 db = DBManager(data_path=Path("/fake"))
                 

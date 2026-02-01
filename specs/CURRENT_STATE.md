@@ -18,6 +18,7 @@
 3. **Basic Exam Test**: Created `tests/test_exam.typ` to render a sample question and test error handling.
 4. **Backend Unit Tests**: Added `TestAssessmentEngine` to `tests/test_backend.py` to verify the parsing of nested `AnswerStep` objects.
 5. **Wizard E2E Tests**: Created `tests/test_wizard.py` to run the `add_question.py` script and validate its output, ensuring database integrity.
+6. **Stress Testing Suite**: Created `tests/test_stress.py` to simulate high-volume data entry and integrity violations (Chaos Monkey).
 
 
 ### 🏰 Phase 5 Complete: The Fortress Lockdown
@@ -32,26 +33,13 @@ The three layers of defense are now in place, significantly hardening system int
 *   **Technical Debt Removed:** The `test_question_parsing` unit test in `tests/test_backend.py` has been refactored to remove the superfluous `pathlib.Path.glob` mock.
 *   **System Stability Verified:** All backend tests (`test_backend.py`) and the database integrity check (`check_integrity.py`) are passing. The system is confirmed to be at 100% Phase 5 stability, ready to proceed to Phase 6.
 
-### 🔬 Recommended Next Steps: Stress Testing & Validation
-With the core integrity checks in place, the next step is to validate them against a large and complex dataset.
+### 🔬 Next Steps: Execution & Validation
+The infrastructure is built. Now we must prove it works under fire.
 
-1.  **Execute Core Tests:**
-    *   **Backend Logic:** Run `python tests/test_backend.py`. This will confirm the referential integrity logic works in isolation.
-    *   **Database Scan:** Run `python scripts/check_integrity.py`. This will scan the current "golden dataset" for any existing link errors.
-    *   **Full Render:** Compile `tests/full_render.typ` with the command `typst compile tests/full_render.typ`. A successful PDF output will prove that all current data is renderable.
-
-2.  **Generate Mock Data:**
-    *   Create a new script, e.g., `scripts/generate_mock_data.py`.
-    *   This script should generate a large, interconnected dataset (`mock_data.yaml`) with hundreds of nodes.
-    *   **Design:** The data should be intentionally complex:
-        *   **Deeply Nested:** Questions that reference tools, which reference definitions.
-        *   **High Fan-out:** Definitions or tools referenced by many other nodes.
-        *   **Intentional Errors (Optional):** Create a separate "broken" mock dataset to ensure the integrity scripts can reliably catch errors.
-
-3.  **Perform Stress Tests:**
-    *   Point the test suite and integrity scripts to the `mock_data.yaml`.
-    *   Re-run all core tests (`test_backend.py`, `check_integrity.py`, `full_render.typ`).
-    *   This will validate that our integrity systems perform correctly under a heavy load and with complex, interconnected data, ensuring the "Fortress" is truly secure.
+1.  **Run Stress Test:** Execute `python tests/test_stress.py`.
+    -   This will backup the data, generate 50+ nodes, verify links, attempt illegal deletes, and restore the backup.
+2.  **Final Render Check:** Compile `tests/full_render.typ` to ensure the visual layer handles the current schema correctly.
+3.  **Phase 6 Planning:** Define the scope for the next phase (e.g., Web Interface or Advanced Exam Generation).
 
 
 ### 🧠 Context for New Session
