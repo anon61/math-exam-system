@@ -19,6 +19,8 @@ if "last_preview" not in st.session_state:
     st.session_state.last_preview = None 
 if "pdf_ready" not in st.session_state:
     st.session_state.pdf_ready = None
+if "key_ready" not in st.session_state:
+    st.session_state.key_ready = None
 
 # --- DATA LOADING ---
 @st.cache_data
@@ -88,22 +90,35 @@ with tab1:
                 st.write(st.session_state.selected_questions)
             
             if st.button("🚀 Compile PDF"):
-                pdf_path = generate_exam(
+                # Expect TWO return values now
+                path_std, path_key = generate_exam(
                     filename="final_exam",
                     specific_ids=st.session_state.selected_questions
                 )
-                if pdf_path:
-                    st.session_state.pdf_ready = str(pdf_path)
-                    st.success("Compilation Complete!")
+                if path_std and path_key:
+                    st.session_state.pdf_ready = str(path_std)
+                    st.session_state.key_ready = str(path_key) # New State Variable
+                    st.success("Exam & Key Generated!")
                 else:
                     st.error("Compilation Failed.")
 
+            # BUTTON 1: Student Exam
             if st.session_state.pdf_ready:
                 with open(st.session_state.pdf_ready, "rb") as f:
                     st.download_button(
-                        label="📥 Download Exam PDF",
+                        label="📄 Download Exam (Student)",
                         data=f,
-                        file_name="My_Math_Exam.pdf",
+                        file_name="Math_Exam.pdf",
+                        mime="application/pdf"
+                    )
+
+            # BUTTON 2: Teacher Key
+            if "key_ready" in st.session_state and st.session_state.key_ready:
+                with open(st.session_state.key_ready, "rb") as f:
+                    st.download_button(
+                        label="🔑 Download Solution Key",
+                        data=f,
+                        file_name="Math_Exam_Key.pdf",
                         mime="application/pdf"
                     )
 

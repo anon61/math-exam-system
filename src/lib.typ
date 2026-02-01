@@ -1,7 +1,7 @@
 // src/lib.typ
 
 // --- CONFIGURATION ---
-#let show-solutions = true // Toggle to false to hide answers
+#let show_solutions = state("solutions", true) // Toggle to false to hide answers
 
 // 1. LOAD THE DATABASE
 #let questions = yaml("../data/questions.yaml")
@@ -138,7 +138,7 @@
         ]
 
         // E. Solutions (Conditional Render)
-        #if show-solutions and "answer_steps" in q and q.answer_steps != none {
+        #context if show_solutions.get() and "answer_steps" in q and q.answer_steps != none {
           block(
             width: 100%,
             inset: (top: 10pt),

@@ -12,9 +12,12 @@ sys.path.append(str(PROJECT_ROOT))
 from scripts.db_manager import DBManager
 from scripts.models import Question, Definition, Tool, Mistake, Example
 
-# --- 3. TEMPLATE (For PDF) ---
+# --- 3. TEMPLATE ---
+# FIX: We add a toggle at the top to control visibility
 TEMPLATE = """
-#import "src/lib.typ": *
+#import "/src/lib.typ": *
+
+#show_solutions.update({show_sol})
 
 #set page(
   paper: "a4", 
@@ -33,12 +36,8 @@ TEMPLATE = """
 #align(center)[*End of Examination*]
 """
 
-# --- 4. PREVIEW RENDERER ---
+# --- 4. PREVIEW RENDERER (Unchanged) ---
 def render_node_preview(node):
-    """
-    Compiles a single node to PNG.
-    Returns: (image_path_string, error_message_string)
-    """
     preview_dir = PROJECT_ROOT / "temp_previews"
     preview_dir.mkdir(exist_ok=True)
     
@@ -53,11 +52,12 @@ def render_node_preview(node):
     elif isinstance(node, Example):
          typ_call = f'#ex("{node.id}")'
     else:
-        return None, "Preview not supported for this type"
+        return None, "Preview not supported."
 
-    # FIX: Set FIXED width (14cm) to prevent "Billboard" scaling effect
+    # Force Solutions to be visible in Preview
     typ_content = f"""
     #import "/src/lib.typ": *
+    #show_solutions.update(true) 
     #set page(width: 14cm, height: auto, margin: 0.5cm, header: none, footer: none)
     #set text(font: "Times New Roman", size: 11pt)
     
@@ -71,82 +71,56 @@ def render_node_preview(node):
         f.write(typ_content)
         
     try:
-        # 144 PPI is standard for crisp screen reading
         result = subprocess.run(
             ["typst", "compile", "--root", str(PROJECT_ROOT), "--format", "png", "--ppi", "144", str(typ_file), str(img_file)],
-            capture_output=True,
-            text=True,
-            encoding="utf-8"
+            capture_output=True, text=True, encoding="utf-8"
         )
-        
-        if result.returncode != 0:
-            return None, f"Typst Error: {result.stderr}"
-            
-        return str(img_file), None
-        
-    except FileNotFoundError:
-        return None, "Error: 'typst' executable not found."
+        return str(img_file) if result.returncode == 0 else None, result.stderr if result.returncode != 0 else None
     except Exception as e:
-        return None, f"System Error: {str(e)}"
+        return None, str(e)
 
-# --- 5. EXAM GENERATOR ---
+# --- 5. EXAM GENERATOR (Double Compilation) ---
 def generate_exam(topic=None, count=3, filename="generated_exam", specific_ids=None):
-    print(f"[INFO] Building Exam...")
+    print(f"[INFO] Building Exam Pairs...")
     
     try:
         db = DBManager(PROJECT_ROOT / "data")
     except Exception as e:
-        print(f"[ERROR] Error loading database: {e}")
-        return None
+        return None, None # Return tuple
 
     selected = []
-
     if specific_ids:
         for qid in specific_ids:
-            if qid in db.questions:
-                selected.append(db.questions[qid])
+            if qid in db.questions: selected.append(db.questions[qid])
     else:
         candidates = list(db.questions.values())
-        if topic:
-            candidates = [q for q in candidates if q.topic and topic.lower() in q.topic.lower()]
-        
-        if not candidates:
-            return None
+        if topic: candidates = [q for q in candidates if topic.lower() in (q.topic or "").lower()]
         selected = random.sample(candidates, min(len(candidates), count)) if candidates else []
 
     typst_body = ""
     for i, q in enumerate(selected, 1):
-        typst_body += f"== Question {i}\n"
-        typst_body += f"#question(\"{q.id}\")\n\n"
+        typst_body += f"== Question {i}\n#question(\"{q.id}\")\n\n"
 
-    full_source = TEMPLATE.format(
-        title=f"Exam: {topic or 'General Mathematics'}",
-        content=typst_body
-    )
-
-    output_typ = PROJECT_ROOT / f"{filename}.typ"
-    with open(output_typ, "w", encoding="utf-8") as f:
-        f.write(full_source)
+    # --- COMPILE 1: STUDENT VERSION (No Solutions) ---
+    src_student = TEMPLATE.format(title=f"Exam: {topic or 'General'}", content=typst_body, show_sol="false")
+    path_student = PROJECT_ROOT / f"{filename}.pdf"
     
-    output_pdf = PROJECT_ROOT / f"{filename}.pdf"
+    with open(PROJECT_ROOT / f"{filename}.typ", "w", encoding="utf-8") as f:
+        f.write(src_student)
     
     try:
-        subprocess.run(
-            ["typst", "compile", "--root", str(PROJECT_ROOT), str(output_typ)], 
-            check=True,
-            encoding="utf-8"
-        )
-        print(f"[SUCCESS] Exam ready: {output_pdf.name}")
-        return output_pdf
-    except Exception as e:
-        print(f"[ERROR] Compilation failed: {e}")
-        return None
+        subprocess.run(["typst", "compile", "--root", str(PROJECT_ROOT), str(PROJECT_ROOT / f"{filename}.typ")], check=True, encoding="utf-8")
+    except: return None, None
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate a random math exam.")
-    parser.add_argument("--topic", help="Filter by topic")
-    parser.add_argument("--count", type=int, default=3, help="Number of questions")
-    parser.add_argument("--name", default="generated_exam", help="Output filename")
+    # --- COMPILE 2: TEACHER VERSION (With Solutions) ---
+    src_teacher = TEMPLATE.format(title=f"Exam: {topic or 'General'} (KEY)", content=typst_body, show_sol="true")
+    path_teacher = PROJECT_ROOT / f"{filename}_key.pdf"
     
-    args = parser.parse_args()
-    generate_exam(topic=args.topic, count=args.count, filename=args.name)
+    with open(PROJECT_ROOT / f"{filename}_key.typ", "w", encoding="utf-8") as f:
+        f.write(src_teacher)
+        
+    try:
+        subprocess.run(["typst", "compile", "--root", str(PROJECT_ROOT), str(PROJECT_ROOT / f"{filename}_key.typ")], check=True, encoding="utf-8")
+        print(f"[SUCCESS] Generated Pair: {path_student.name} & {path_teacher.name}")
+        return path_student, path_teacher
+    except: return None, None
