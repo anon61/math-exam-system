@@ -135,7 +135,7 @@
   given: |-
     Let $A$ and $B$ be subsets of a universal set $U$.
   to_prove: |-
-    Prove $(A union B)^c = A^c sect B^c$.
+    Prove $(A union B)^c = A^c inter B^c$.
   hint: Show mutual inclusion (LHS subset RHS and RHS subset LHS).
   answer_steps:
   - type: Proof
