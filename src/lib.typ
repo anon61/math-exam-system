@@ -1,5 +1,8 @@
 // src/lib.typ
 
+// --- CONFIGURATION ---
+#let show-solutions = true // Toggle to false to hide answers
+
 // 1. LOAD THE DATABASE
 #let questions = yaml("../data/questions.yaml")
 #let definitions = yaml("../data/definitions.yaml")
@@ -133,6 +136,24 @@
             ]
           )
         ]
+
+        // E. Solutions (Conditional Render)
+        #if show-solutions and "answer_steps" in q and q.answer_steps != none {
+          block(
+            width: 100%,
+            inset: (top: 10pt),
+            stroke: (top: 1pt + luma(200)),
+            [
+              #text(fill: rgb("#004400"), weight: "bold")[Official Solution:]
+              #for step in q.answer_steps [
+                #pad(left: 1em, top: 0.5em)[
+                  #strong[#step.title] (#text(style: "italic")[#step.type]) \
+                  #eval(step.content, mode: "markup", scope: eval-scope)
+                ]
+              ]
+            ]
+          )
+        }
       ]
     )
   } else {
