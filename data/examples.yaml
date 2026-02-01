@@ -1,0 +1,14 @@
+- id: ex-harmonic
+  name: Harmonic Series
+  type: Standard
+  description: The series sum(1/n) from n=1 to infinity. It diverges.
+  refs:
+    - def-seq-limit
+- id: ex-alt-harmonic
+  name: Alternating Harmonic Series
+  type: Standard
+  description: The series sum((-1)^(n+1)/n) from n=1 to infinity. It converges.
+- id: ex-dirichlet
+  name: Dirichlet Function
+  type: Counter-Example
+  description: The function f(x) = 1 if x is rational, and 0 if x is irrational.

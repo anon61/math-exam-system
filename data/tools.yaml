@@ -1,0 +1,8 @@
+- id: tool-tri-ineq
+  name: Triangle Inequality
+  short_name: Tri-Ineq
+  description: For any real numbers x and y, |x + y| <= |x| + |y|.
+- id: tool-bw
+  name: Bolzano-Weierstrass Theorem
+  short_name: BW
+  description: Every bounded sequence in R^n has a convergent subsequence.

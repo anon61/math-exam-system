@@ -1,0 +1,8 @@
+- id: err-sign
+  name: Sign Error
+  severity: Minor
+  description: An error where a sign is flipped, e.g., using '+' instead of '-'.
+- id: err-circular
+  name: Circular Reasoning
+  severity: Critical
+  description: An error where the proof assumes what it is trying to prove.

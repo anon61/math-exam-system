@@ -1,0 +1,6 @@
+- id: course-real1
+  name: Real Analysis I
+  sequence:
+    - def-seq-limit
+    - def-bounded
+    - def-cauchy

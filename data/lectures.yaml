@@ -1,0 +1,10 @@
+- id: lec-01
+  name: Introduction to Limits
+  refs:
+    - def-seq-limit
+    - tool-tri-ineq
+- id: lec-02
+  name: Cauchy Sequences
+  refs:
+    - def-cauchy
+    - tool-bw
