@@ -1,4 +1,13 @@
-from dataclasses import dataclass, field
+import os
+from pathlib import Path
+
+# Project path setup
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+MODELS_PATH = PROJECT_ROOT / "scripts" / "models.py"
+
+def apply_master_schema():
+    """Applies the comprehensive model schema to prevent ImportErrors."""
+    master_code = """from dataclasses import dataclass, field
 from typing import List, Optional
 from enum import Enum
 
@@ -23,7 +32,6 @@ class Severity(str, Enum):
 # --- 2. CORE GRAPH PRIMITIVES ---
 @dataclass
 class KnowledgeNode:
-    """Base class for all nodes. Ensures every object has an ID."""
     id: str
 
 @dataclass
@@ -79,7 +87,6 @@ class Definition(KnowledgeNode):
     name: Optional[str] = None
 
     def __post_init__(self):
-        # Data Normalization: Ensures the engine always has a 'term' to display
         if not self.term and self.name:
             self.term = self.name
         if not self.term:
@@ -94,16 +101,12 @@ class Tool(KnowledgeNode):
     statement: Optional[str] = None
 
     def __post_init__(self):
-        # Data Normalization: Handle Theorems (statement) vs Tools (description)
         if not self.short_name and self.name:
             self.short_name = self.name
         if not self.short_name:
             self.short_name = "Untitled Tool"
-            
         if not self.description and self.statement:
             self.description = self.statement
-        if not self.description:
-            self.description = "No description provided."
 
 @dataclass
 class Mistake(KnowledgeNode):
@@ -116,3 +119,15 @@ class Example(KnowledgeNode):
     title: str
     content: str
     type: Optional[ExampleType] = None
+"""
+    
+    print(f"Applying Master Schema to {MODELS_PATH}...")
+    try:
+        with open(MODELS_PATH, "w", encoding="utf-8") as f:
+            f.write(master_code)
+        print("Success: Schema synchronized.")
+    except Exception as e:
+        print(f"Error applying schema: {e}")
+
+if __name__ == "__main__":
+    apply_master_schema()
