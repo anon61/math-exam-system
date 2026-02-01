@@ -1,16 +1,15 @@
 # Project State Log
 
-## ✅ Completed: Phase 3 (CLI Implementation)
-- [x] **Created `scripts/manage.py`**: A new, unified CLI tool using `argparse`.
-- [x] **Hardened Data Models**: Fixed the `Definition.__init__` bug where `id` was missing from prompts.
+## ✅ Completed: Phase 3 (CLI & Verification)
+- [x] **Manual Verification Passed**: Confirmed integrity checks (blocking invalid deletes) and happy paths work in the terminal.
+- [x] **Models & Manager**: Backend is stable.
 
-## 📅 Status: Phase 3.5 (Testing and Verification)
-**Goal:** Finalize manual testing of the CLI.
+## 📅 Status: Phase 3.5 (Automation)
+**Goal:** Create a script to run CLI tests automatically so we never have to do it manually again.
 
 ### 🏗️ Active Tasks (Todo)
-- [x] **Manual Test: Interactive Add**: Verified `add definition` works correctly.
-- [ ] **Manual Test: Integrity Checks**: Verify that `delete` is blocked when dependencies exist.
-- [ ] **Manual Test: Edge Cases**: Verify handling of invalid IDs and empty inputs.
+- [ ] **Create `tests/test_cli_e2e.py`**: A Python script using `subprocess` to simulate user interaction with `manage.py`.
 
-### 🛑 Current Blockers
-- None.
+## 🚀 Next Up: Phase 4 (Content Integration)
+- [ ] **Snippets**: Update VS Code to verify IDs.
+- [ ] **Content**: Start writing real definitions.
