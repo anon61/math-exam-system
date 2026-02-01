@@ -109,13 +109,9 @@ def handle_add(args, db: DBManager):
     print(f"--- Adding new {node_type_str} ---")
 
     data = {}
+    # The corrected logic iterates over all fields returned by `dataclasses.fields`,
+    # which correctly includes inherited fields in the proper order (parents first).
     for f in fields(node_class):
-        # Skip fields that are inherited from a parent and are also in the parent
-        if f.name in Assessment.__dataclass_fields__ and node_class not in [Question, Homework]:
-             continue
-        if f.name in KnowledgeNode.__dataclass_fields__ and f.name != 'id':
-            continue
-
         prompt = f"Enter {f.name} ({f.type.__name__})"
         
         # Handle default values
@@ -163,7 +159,18 @@ def handle_add(args, db: DBManager):
                         break
 
     try:
-        new_node = node_class(**data)
+        # Filter out keys with None values unless they don't have a default
+        final_data = {}
+        for f in fields(node_class):
+            field_name = f.name
+            if field_name in data:
+                final_data[field_name] = data[field_name]
+            elif f.default is MISSING and f.default_factory is MISSING:
+                 # This will likely cause an error below, which is what we want
+                 # for missing required fields.
+                 pass
+        
+        new_node = node_class(**final_data)
         db.add_node(new_node)
         save_changes(db)
         print(f"\n[Success] Added {node_type_str} '{new_node.id}'.")
