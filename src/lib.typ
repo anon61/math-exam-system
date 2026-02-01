@@ -3,6 +3,18 @@
 
 #import "utils.typ": *
 
+// --- KNOWLEDGE BASE (KB) LOADER ---
+#let KB = (
+  examples: yaml("../data/examples.yaml"),
+  // definitions: yaml("../data/definitions.yaml"),
+  // tools: yaml("../data/tools.yaml"),
+  // mistakes: yaml("../data/mistakes.yaml"),
+  // courses: yaml("../data/courses.yaml"),
+  // lectures: yaml("../data/lectures.yaml"),
+  // tutorials: yaml("../data/tutorials.yaml"),
+  // questions: yaml("../data/questions.yaml"),
+)
+
 // FIX: Comprehensive scope definition to handle all symbols used in YAML
 #let eval-scope = (
   img: img, 
@@ -30,6 +42,34 @@
     }
     return passes
   })
+}
+
+// --- ATOMIC RENDERERS ---
+#let ex-colors = (
+  "Standard": green,
+  "Counter-Example": red,
+  "Non-Example": orange,
+)
+
+#let ex(id) = {
+  let item = KB.examples.find(e => e.id == id)
+  if item == none {
+    return text(fill: red)[*Error: Example `#id` not found.*]
+  }
+
+  let item-color = ex-colors.at(item.type)
+
+  block(
+    fill: item-color.lighten(90%),
+    stroke: (left: 3pt + item-color),
+    inset: 8pt,
+    radius: 3pt,
+    [
+      #text(weight: "bold")[#item.name (#item.type)]
+      #v(0.5em)
+      #item.content
+    ]
+  )
 }
 
 // --- DOCUMENT TEMPLATE ---
