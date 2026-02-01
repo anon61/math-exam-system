@@ -11,11 +11,13 @@
 ## 📅 Status: Phase 5 (The Exam Engine)
 **Goal:** Automate the creation of Exams and Worksheets using data from `questions.yaml`.
 
+### ✅ Completed Tasks
+1. **`#question(id)` Function**: Implemented in `src/lib.typ`.
+   - *Details:* The function loads `questions.yaml`, adds them to the `KB`, and renders a full question block including topic, metadata, "Given", "To Prove", and "Hint" sections. It uses an `eval-scope` to compile Typst code embedded in the YAML source.
+
 ### 🏗️ Active Tasks (Immediate Todo)
-1. **Update `src/lib.typ`**: Implement the `#question(id)` function.
-   - *Requirements:* Render "Given", "To Prove", and "Hint" in a styled box.
-2. **Implement Solutions Toggle**: Add a global boolean `#let show-solutions = true` that reveals/hides answers.
-3. **Create `test_exam.typ`**: A file that imports 3 questions from the DB to prove the engine works.
+1. **Implement Solutions Toggle**: Add a global boolean `#let show-solutions = true` that reveals/hides answers.
+2. **Create `test_exam.typ`**: A file that imports 3 questions from the DB to prove the engine works.
 
 ### 🧠 Context for New Session
 - **Strict Schema:** We follow `scripts/models.py` exactly.
