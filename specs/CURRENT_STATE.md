@@ -1,14 +1,17 @@
 # Project State Log
 
-## ✅ Completed: Phase 3 (CLI Implementation)
-- [x] Verified `manage.py` works manually.
+## ✅ Completed: Phase 3.5 (Data Stability)
+- [x] **Golden Dataset Verified**: Manually fixed `definitions.yaml`, `tools.yaml`, and `examples.yaml` to match `models.py`.
+- [x] **CLI Verified**: `list` commands return correct data for all layers.
 
-## 📅 Status: Phase 3.5 (Data Population)
-**Goal:** Create a consistent "Golden Dataset" for testing and development.
+## 📅 Status: Phase 3.6 (Stress Testing)
+**Goal:** Simulate "Massive Use" to ensure the CLI and Database handle volume correctly without corruption.
 
 ### 🏗️ Active Tasks (Todo)
-- [ ] **Generate Mock Data**: Create 8 YAML files in `data/` with linked Real Analysis content.
-- [ ] **Create `tests/test_cli_e2e.py`**: Now that data exists, build the automated test.
+- [ ] **Create `tests/test_stress.py`**: A script that automates adding/deleting 100+ nodes to find edge cases.
+    - *Must include:* Auto-Backup (so we don't lose our Golden Data).
+    - *Must include:* Random operations (Add, Link, Delete).
+- [ ] **Run Stress Test**: Verify system stability.
 
-### 🧠 Context Log
-- **[2026-Feb-01]**: Decided to populate `data/` with mock Real Analysis content before writing E2E tests to ensuring we test against a realistic graph.
+## 🚀 Next Up: Phase 4 (Content Integration)
+- [ ] **Snippets**: VS Code integration.
