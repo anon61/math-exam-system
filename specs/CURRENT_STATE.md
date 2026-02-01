@@ -1,17 +1,20 @@
 # Project State Log
 
-## 📅 Status: Phase 1 (The Pilot)
-**Goal:** Prove the system works by implementing the "Examples" layer.
+## ✅ Completed: Phase 1 (The Pilot)
+- [x] Proven the "Examples" layer works (YAML -> Model -> Typst).
+- [x] `test_examples.typ` compiles successfully.
+
+## 📅 Status: Phase 2 (The Enforcer Backend)
+**Goal:** Build the Python logic to load, validate, and manage all 8 layers.
 
 ### 🏗️ Active Tasks (Todo)
-- [x] Create `data/examples.yaml` with 3 dummy entries (Standard, Counter, Non-Example).
-- [x] Update `scripts/models.py` to include the `Example` class and `ExampleType` Enum.
-- [x] Update `src/lib.typ` to load `examples.yaml` into `KB`.
-- [x] Implement `#ex(id)` function in `src/lib.typ` with color coding.
-- [x] Create a test PDF `test_examples.typ` to verify rendering.
+- [ ] **Expand `scripts/models.py`**: Implement `KnowledgeNode` (Base Class) and the remaining 7 dataclasses (Definition, Tool, Mistake, Course, Lecture, Tutorial, Question).
+- [ ] **Create `scripts/db_manager.py`**: Implement the class that loads all YAMLs into these objects.
+- [ ] **Create `scripts/check_integrity.py`**: A script to verify that every `definition_id` used actually exists.
 
 ### 🛑 Current Blockers
-- None.
+- `models.py` currently only supports `Example`. Needs full expansion.
 
 ### 🧠 Context Log
-- **[2025-Start]**: Architecture finalized. Decided to use 8 layers. "Non-Example" type added for pedagogical clarity.
+- **[2025-Feb-01]**: Phase 1 Complete. Moving to build the strict Python backend.
+- **[2025-Start]**: Architecture finalized. 8-Layer topology.
