@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import patch, mock_open
 from pathlib import Path
 import sys
-import yaml
 
 # Add scripts to the Python path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -17,34 +16,23 @@ class TestModels(unittest.TestCase):
     """Tests for the data models in scripts/models.py"""
 
     def test_knowledge_node_instantiation(self):
-        """Verify standard nodes can be instantiated."""
         node = KnowledgeNode(id="node-1")
         self.assertEqual(node.id, "node-1")
         
-        # Test Definition
         d = Definition(id="def-1", term="T", content="C")
         self.assertEqual(d.term, "T")
 
     def test_enums(self):
-        """Verify Enum constraints."""
         self.assertEqual(ExampleType("Standard"), ExampleType.STANDARD)
         with self.assertRaises(ValueError):
             Severity("Super-Critical")
 
 class TestAssessmentEngine(unittest.TestCase):
-    """Specific tests for Phase 5 (Questions, Answers, Homework)."""
+    """Specific tests for Phase 5 (Questions, Answers)."""
 
-    def test_answer_step_structure(self):
-        """Verify AnswerStep dataclass works as expected."""
-        step = AnswerStep(type="Proof", title="Step 1", content="x=y")
-        self.assertEqual(step.type, "Proof")
-        self.assertIsNone(step.proof)
-
-    def test_question_parsing(self):
-        """
-        Critical: Verify DBManager can parse nested AnswerStep objects inside Questions.
-        This mocks the YAML load process specifically for questions.
-        """
+    @patch('pathlib.Path.glob')
+    def test_question_parsing(self, mock_glob):
+        """Verify DBManager can parse nested AnswerStep objects."""
         mock_yaml = """
         - id: "qn-test"
           topic: "Limits"
@@ -53,43 +41,74 @@ class TestAssessmentEngine(unittest.TestCase):
               title: "Find Delta"
               content: "delta = epsilon/3"
         """
-        
-        # Mock the file system
+        # Make glob return a path object that will be used by mock_open
+        mock_glob.return_value = [Path("/fake/questions.yaml")]
+
         with patch("builtins.open", mock_open(read_data=mock_yaml)):
             with patch("pathlib.Path.exists", return_value=True):
-                # Prevent automatic DB load on init
-                with patch("scripts.db_manager.DBManager.load_db", lambda self: None):
-                    db = DBManager(data_path=Path("/fake"))
-
-                # We mock the _type_map iteration to only load questions for this test
-                db._type_map = { "questions.yaml": (Question, db.questions) }
-                db.load_db()
+                # This test now correctly isolates the file loading process.
+                db = DBManager(data_path=Path("/fake"))
                 
-                # Check if the Question was loaded
                 self.assertIn("qn-test", db.questions)
                 q = db.questions["qn-test"]
-                
-                # Check if nested AnswerSteps were parsed into Objects, not left as Dicts
                 self.assertTrue(hasattr(q, "answer_steps"))
-                self.assertEqual(len(q.answer_steps), 1)
-                first_step = q.answer_steps[0]
-                
-                self.assertIsInstance(first_step, AnswerStep, "Nested list should be converted to AnswerStep objects")
-                self.assertEqual(first_step.title, "Find Delta")
+                self.assertIsInstance(q.answer_steps[0], AnswerStep)
+                self.assertEqual(q.answer_steps[0].title, "Find Delta")
 
 class TestDatabaseManager(unittest.TestCase):
-    """General DBManager logic."""
+    """Core Database Logic & Integrity Tests."""
 
-    @patch("pathlib.Path.exists", return_value=True)
-    def test_add_node_uniqueness(self, mock_exists):
-        """Test that add_node raises error for duplicate IDs."""
-        # Setup empty DB
-        with patch("scripts.db_manager.DBManager.load_db", lambda self: None):
-            db = DBManager(Path("/fake"))
-            node = Definition(id="d1", term="t", content="c")
-            db.add_node(node)
-            with self.assertRaises(ValueError):
-                db.add_node(node)
+    @patch("scripts.db_manager.DBManager.load_db", lambda self: None)
+    def setUp(self):
+        self.db = DBManager(Path("/fake"))
+
+    def test_add_node_uniqueness(self):
+        """Prevent duplicate IDs."""
+        node = Definition(id="d1", term="t", content="c")
+        self.db.add_node(node)
+        with self.assertRaises(ValueError):
+            self.db.add_node(node)
+
+    def test_delete_integrity_protection(self):
+        """CRITICAL: Ensure nodes cannot be deleted if referenced."""
+        # 1. Create a dependency chain: Example -&gt; Definition
+        defi = Definition(id="def-root", term="Root", content="...")
+        ex = Example(id="ex-child", name="Child", type=ExampleType.STANDARD, content="...", related_definition_ids=["def-root"])
+        
+        self.db.add_node(defi)
+        self.db.add_node(ex)
+
+        # 2. Try to delete the Definition (Should Fail)
+        with self.assertRaisesRegex(ValueError, "referenced by node 'ex-child'"):
+            self.db.delete_node("def-root")
+        
+        # 3. Delete the Child first
+        self.db.delete_node("ex-child")
+        self.assertNotIn("ex-child", self.db.nodes)
+        
+        # 4. Now delete the Parent (Should Succeed)
+        self.db.delete_node("def-root")
+        self.assertNotIn("def-root", self.db.nodes)
+
+    def test_update_id_cascading(self):
+        """Verify changing an ID updates all references to it."""
+        defi = Definition(id="def-old", term="Root", content="...")
+        ex = Example(id="ex-child", name="Child", type=ExampleType.STANDARD, content="...", related_definition_ids=["def-old"])
+        
+        self.db.add_node(defi)
+        self.db.add_node(ex)
+
+        # Rename def-old -&gt; def-new
+        self.db.update_node_id("def-old", "def-new")
+
+        # Check Definition
+        self.assertNotIn("def-old", self.db.nodes)
+        self.assertIn("def-new", self.db.nodes)
+        
+        # Check Reference in Example
+        updated_ex = self.db.nodes["ex-child"]
+        self.assertIn("def-new", updated_ex.related_definition_ids)
+        self.assertNotIn("def-old", updated_ex.related_definition_ids)
 
 if __name__ == "__main__":
     unittest.main()

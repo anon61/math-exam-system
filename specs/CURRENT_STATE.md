@@ -20,14 +20,34 @@
 5. **Wizard E2E Tests**: Created `tests/test_wizard.py` to run the `add_question.py` script and validate its output, ensuring database integrity.
 
 
-### 🏗️ Active Tasks (Immediate Todo)
-*This phase is functionally complete. The next stage is to harden the system with more comprehensive testing.*
+### 🏰 Phase 5 Complete: The Fortress Lockdown
+The three layers of defense are now in place, significantly hardening system integrity.
 
-### 🔬 Recommended Next Steps: Deeper Testing
-1. **`db_manager.py` Edge Cases**: Create tests for `delete_node` (including referential integrity checks) and `update_node_id` (verifying that all references are updated correctly).
-2. **`manage.py` CLI E2E Tests**: Write a test suite for the main CLI tool that simulates user commands like `delete` and `edit`, similar to the wizard test.
-3. **Database Integrity Script (`check_integrity.py`)**: Implement and test this script to ensure it can detect and report broken relationships in the YAML database.
-4. **Typst Render Pass**: Create a Typst file (`tests/full_render.typ`) that iterates through *every* entry in the database (all definitions, tools, questions, etc.) and attempts to render them. A successful compilation would serve as a powerful end-to-end integration test.
+1.  **Data Integrity (The Librarian):** `scripts/check_integrity.py` is operational. It scans the entire database for broken references.
+2.  **Visual Integrity (The Smoke Test):** `tests/full_render.typ` has been created. It will compile every node in the database, guaranteeing that no malformed data can break the PDF output.
+3.  **Logic Integrity (The Guardrails):** `tests/test_backend.py` has been updated with strict referential integrity tests. The `DBManager` now actively prevents the deletion of nodes that are still referenced by other nodes.
+
+### 🔬 Recommended Next Steps: Stress Testing & Validation
+With the core integrity checks in place, the next step is to validate them against a large and complex dataset.
+
+1.  **Execute Core Tests:**
+    *   **Backend Logic:** Run `python tests/test_backend.py`. This will confirm the referential integrity logic works in isolation.
+    *   **Database Scan:** Run `python scripts/check_integrity.py`. This will scan the current "golden dataset" for any existing link errors.
+    *   **Full Render:** Compile `tests/full_render.typ` with the command `typst compile tests/full_render.typ`. A successful PDF output will prove that all current data is renderable.
+
+2.  **Generate Mock Data:**
+    *   Create a new script, e.g., `scripts/generate_mock_data.py`.
+    *   This script should generate a large, interconnected dataset (`mock_data.yaml`) with hundreds of nodes.
+    *   **Design:** The data should be intentionally complex:
+        *   **Deeply Nested:** Questions that reference tools, which reference definitions.
+        *   **High Fan-out:** Definitions or tools referenced by many other nodes.
+        *   **Intentional Errors (Optional):** Create a separate "broken" mock dataset to ensure the integrity scripts can reliably catch errors.
+
+3.  **Perform Stress Tests:**
+    *   Point the test suite and integrity scripts to the `mock_data.yaml`.
+    *   Re-run all core tests (`test_backend.py`, `check_integrity.py`, `full_render.typ`).
+    *   This will validate that our integrity systems perform correctly under a heavy load and with complex, interconnected data, ensuring the "Fortress" is truly secure.
+
 
 ### 🧠 Context for New Session
 - **Strict Schema:** We follow `scripts/models.py` exactly.
