@@ -32,7 +32,7 @@ class TestAssessmentEngine(unittest.TestCase):
 
     def test_question_parsing(self):
         """Verify DBManager can parse nested AnswerStep objects."""
-        mock_yaml = """
+        mock_question_yaml = """
         - id: "qn-test"
           topic: "Limits"
           answer_steps:
@@ -40,9 +40,17 @@ class TestAssessmentEngine(unittest.TestCase):
               title: "Find Delta"
               content: "delta = epsilon/3"
         """
-        # We only need to mock 'open' and 'exists'. 
-        # The DBManager uses explicit filenames, so no glob mocking is required.
-        with patch("builtins.open", mock_open(read_data=mock_yaml)):
+        
+        # This custom side effect will return the correct mock data based on the file being opened.
+        def custom_open_side_effect(file_path, *args, **kwargs):
+            if 'questions.yaml' in str(file_path):
+                return mock_open(read_data=mock_question_yaml)()
+            else:
+                # Return an empty file for all other yaml files to avoid TypeErrors
+                return mock_open(read_data="")()
+
+        # The DBManager uses explicit filenames, so we patch `builtins.open`.
+        with patch("builtins.open", side_effect=custom_open_side_effect):
             with patch("pathlib.Path.exists", return_value=True):
                 db = DBManager(data_path=Path("/fake"))
                 
