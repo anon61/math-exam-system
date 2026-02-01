@@ -8,13 +8,13 @@ sys.path.append(str(PROJECT_ROOT))
 from scripts.db_manager import DBManager
 
 def check_integrity():
-    print("🔍 Starting Database Integrity Check...")
+    print("Starting Database Integrity Check...")
     data_path = PROJECT_ROOT / "data"
     
     try:
         db = DBManager(data_path)
     except Exception as e:
-        print(f"❌ CRITICAL: Could not load database. {e}")
+        print(f"CRITICAL: Could not load database. {e}")
         sys.exit(1)
 
     print(f"   Loaded {len(db.nodes)} nodes.")
@@ -44,6 +44,11 @@ def check_integrity():
                 if target not in db.mistakes:
                     errors.append(f"[{node_id}] refers to unknown Mistake '{target}'")
 
+        if hasattr(node, 'example_ids'):
+            for target in node.example_ids:
+                if target not in db.examples:
+                    errors.append(f"[{node_id}] refers to unknown Example '{target}'")
+
         # 4. Check Sequence Lists (Courses)
         if hasattr(node, 'definition_sequence'):
             for target in node.definition_sequence:
@@ -51,12 +56,12 @@ def check_integrity():
                     errors.append(f"[{node_id}] Broken definition_sequence link '{target}'")
 
     if errors:
-        print(f"\n❌ FAILED: Found {len(errors)} integrity errors:")
+        print(f"\nFAILED: Found {len(errors)} integrity errors:")
         for e in errors:
             print(f"   - {e}")
         sys.exit(1)
     else:
-        print("\n✅ SUCCESS: Database integrity verified. No broken links.")
+        print("\nSUCCESS: Database integrity verified. No broken links.")
         sys.exit(0)
 
 if __name__ == "__main__":

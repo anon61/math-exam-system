@@ -30,8 +30,7 @@ class TestModels(unittest.TestCase):
 class TestAssessmentEngine(unittest.TestCase):
     """Specific tests for Phase 5 (Questions, Answers)."""
 
-    @patch('pathlib.Path.glob')
-    def test_question_parsing(self, mock_glob):
+    def test_question_parsing(self):
         """Verify DBManager can parse nested AnswerStep objects."""
         mock_yaml = """
         - id: "qn-test"
@@ -41,12 +40,19 @@ class TestAssessmentEngine(unittest.TestCase):
               title: "Find Delta"
               content: "delta = epsilon/3"
         """
-        # Make glob return a path object that will be used by mock_open
-        mock_glob.return_value = [Path("/fake/questions.yaml")]
+        
+        # This mock now simulates the file-loading logic of DBManager more accurately.
+        # It ensures that only 'questions.yaml' returns the mock data.
+        m = mock_open(read_data=mock_yaml)
+        def open_side_effect(path, *args, **kwargs):
+            if str(path).endswith("questions.yaml"):
+                return m(path, *args, **kwargs)
+            else:
+                # For all other files, return an empty file
+                return mock_open(read_data="")(path, *args, **kwargs)
 
-        with patch("builtins.open", mock_open(read_data=mock_yaml)):
+        with patch("builtins.open", side_effect=open_side_effect):
             with patch("pathlib.Path.exists", return_value=True):
-                # This test now correctly isolates the file loading process.
                 db = DBManager(data_path=Path("/fake"))
                 
                 self.assertIn("qn-test", db.questions)
