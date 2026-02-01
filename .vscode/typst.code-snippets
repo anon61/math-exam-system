@@ -1,0 +1,67 @@
+{
+  "Ref: Limit of a sequence (def-seq-limit)": {
+    "prefix": "def",
+    "body": [
+      "#def(\"def-seq-limit\")"
+    ],
+    "description": "A sequence x_n converges to L if for every epsilon > 0 there exists N such that |x_n - L| < epsilon ..."
+  },
+  "Ref: Cauchy Sequence (def-cauchy)": {
+    "prefix": "def",
+    "body": [
+      "#def(\"def-cauchy\")"
+    ],
+    "description": "A sequence where the terms become arbitrarily close to each other as the sequence progresses."
+  },
+  "Ref: Bounded Sequence (def-bounded)": {
+    "prefix": "def",
+    "body": [
+      "#def(\"def-bounded\")"
+    ],
+    "description": "A sequence is bounded if there exists a real number M such that |x_n| <= M for all n."
+  },
+  "Ref: Triangle Inequality (tool-tri-ineq)": {
+    "prefix": "tool",
+    "body": [
+      "#tool(\"tool-tri-ineq\")"
+    ],
+    "description": "For any real numbers x and y, |x + y| <= |x| + |y|."
+  },
+  "Ref: Bolzano-Weierstrass Theorem (tool-bw)": {
+    "prefix": "tool",
+    "body": [
+      "#tool(\"tool-bw\")"
+    ],
+    "description": "Every bounded sequence in R^n has a convergent subsequence."
+  },
+  "Ref: Harmonic Series (ex-harmonic)": {
+    "prefix": "ex",
+    "body": [
+      "#ex(\"ex-harmonic\")"
+    ]
+  },
+  "Ref: Alternating Harmonic Series (ex-alt-harmonic)": {
+    "prefix": "ex",
+    "body": [
+      "#ex(\"ex-alt-harmonic\")"
+    ]
+  },
+  "Ref: Dirichlet Function (ex-dirichlet)": {
+    "prefix": "ex",
+    "body": [
+      "#ex(\"ex-dirichlet\")"
+    ]
+  },
+  "Ref: Sign Error (err-sign)": {
+    "prefix": "mistake",
+    "body": [
+      "#mistake(\"err-sign\")"
+    ]
+  },
+  "Ref: Circular Reasoning (err-circular)": {
+    "prefix": "mistake",
+    "body": [
+      "#mistake(\"err-circular\")"
+    ]
+  }
+}
