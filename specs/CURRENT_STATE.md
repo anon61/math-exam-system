@@ -1,14 +1,10 @@
 # Project State Log
 
-## ✅ Completed: Phase 3 (CLI & Verification)
-- [x] **Manual Verification Passed**: Confirmed integrity checks (blocking invalid deletes) and happy paths work in the terminal.
-- [x] **Models & Manager**: Backend is stable.
-
-## 📅 Status: Phase 3.5 (Automation)
-**Goal:** Create a script to run CLI tests automatically so we never have to do it manually again.
-
-### 🏗️ Active Tasks (Todo)
-- [ ] **Create `tests/test_cli_e2e.py`**: A Python script using `subprocess` to simulate user interaction with `manage.py`.
+## ✅ Completed: Phase 3.5 (Automation & Integrity)
+- [x] **Referential Integrity Verified**: The `DatabaseManager` correctly prevents the deletion of a node if it is referenced by another node.
+- [x] **E2E Test Automation**: Created and verified `tests/test_cli_e2e.py`, which uses `subprocess` to run a full, automated test of the referential integrity scenario.
+- [x] **Safe Testing**: The E2E test now includes a backup-and-restore mechanism to prevent the accidental deletion of existing database files, ensuring it can be run safely.
+- [x] **CLI Foundation Stable**: The `add` and `delete` commands are implemented, verified, and tested.
 
 ## 🚀 Next Up: Phase 4 (Content Integration)
 - [ ] **Snippets**: Update VS Code to verify IDs.
