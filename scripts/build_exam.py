@@ -107,6 +107,37 @@ def generate_exam(topic=None, count=3, filename="generated_exam", specific_ids=N
         print("❌ Error: Typst CLI not found. Is it installed?")
         return None
 
+def render_preview(question, project_root):
+    """Compiles a single question to SVG for the UI."""
+    preview_dir = project_root / "temp_previews"
+    preview_dir.mkdir(exist_ok=True)
+    
+    # Small template just for the snippet
+    typ_content = f"""
+#import "src/lib.typ": *
+#set page(width: auto, height: auto, margin: 1cm)
+#question("{question.id}")
+"""
+    
+    typ_file = preview_dir / f"{question.id}.typ"
+    svg_file = preview_dir / f"{question.id}.svg"
+    
+    with open(typ_file, "w", encoding="utf-8") as f:
+        f.write(typ_content)
+        
+    try:
+        # Use capture_output to get stderr
+        result = subprocess.run(
+            ["typst", "compile", "--format", "svg", "--root", str(project_root), str(typ_file), str(svg_file)],
+            check=True, capture_output=True, text=True
+        )
+        return svg_file, None
+    except subprocess.CalledProcessError as e:
+        # Return the error message from stderr
+        return None, e.stderr
+    except FileNotFoundError:
+        return None, "Typst CLI not found. Is it installed on your system PATH?"
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a random math exam.")
     parser.add_argument("--topic", help="Filter by topic (e.g. 'Limits')")
