@@ -1,11 +1,10 @@
-- id: "err-sign"
-  name: "Sign Error"
-  severity: "Minor"
-  description: "Flipping a plus to a minus."
-  remedy: "Check each step carefully."
-
-- id: "err-circular"
-  name: "Circular Reasoning"
-  severity: "Critical"
-  description: "Using the statement to be proved as part of the proof."
-  remedy: "Start strictly from definitions."
+- id: err-circular
+  name: Circular Reasoning
+  severity: Critical
+  description: Using the statement to be proved as part of the proof.
+  remedy: Start strictly from definitions.
+- id: err-sign
+  name: Sign Error
+  severity: Minor
+  description: Flipping a plus to a minus.
+  remedy: Check each step carefully.

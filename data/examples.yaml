@@ -1,17 +1,18 @@
-- id: "ex-harmonic"
-  name: "Harmonic Series"
-  type: "Standard"
-  content: "The sum of reciprocals 1 + 1/2 + 1/3... diverges."
-  related_definition_ids: ["def-seq-limit"]
-
-- id: "ex-alt-harmonic"
-  name: "Alternating Harmonic Series"
-  type: "Standard"
-  content: "The series 1 - 1/2 + 1/3... converges to ln(2)."
-  related_definition_ids: ["def-seq-limit"]
-
-- id: "ex-dirichlet"
-  name: "Dirichlet Function"
-  type: "Counter-Example"
-  content: "1 if rational, 0 if irrational. Not Riemann integrable."
-  related_definition_ids: ["def-cauchy"]
+- id: ex-alt-harmonic
+  name: Alternating Harmonic Series
+  type: Standard
+  content: The series 1 - 1/2 + 1/3... converges to ln(2).
+  related_definition_ids:
+  - def-seq-limit
+- id: ex-dirichlet
+  name: Dirichlet Function
+  type: Counter-Example
+  content: 1 if rational, 0 if irrational. Not Riemann integrable.
+  related_definition_ids:
+  - def-cauchy
+- id: ex-harmonic
+  name: Harmonic Series
+  type: Standard
+  content: The sum of reciprocals 1 + 1/2 + 1/3... diverges.
+  related_definition_ids:
+  - def-seq-limit

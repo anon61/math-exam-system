@@ -1,15 +1,20 @@
-- id: "lec-01"
+- id: lec-01
   sequence: 1
-  title: "Introduction to Limits"
-  date: "2023-10-01"
-  definition_ids: ["def-seq-limit"]
-  tool_ids: ["tool-tri-ineq"]
-  example_ids: ["ex-harmonic"]
-
-- id: "lec-02"
+  title: Introduction to Limits
+  date: '2023-10-01'
+  definition_ids:
+  - def-seq-limit
+  tool_ids:
+  - tool-tri-ineq
+  example_ids:
+  - ex-harmonic
+- id: lec-02
   sequence: 2
-  title: "Cauchy Sequences"
-  date: "2023-10-03"
-  definition_ids: ["def-cauchy"]
-  tool_ids: ["tool-bw"]
-  example_ids: ["ex-dirichlet"]
+  title: Cauchy Sequences
+  date: '2023-10-03'
+  definition_ids:
+  - def-cauchy
+  tool_ids:
+  - tool-bw
+  example_ids:
+  - ex-dirichlet

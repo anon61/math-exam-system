@@ -1,11 +1,12 @@
-- id: "def-seq-limit"
-  term: "Limit of a sequence"
-  content: "A sequence x_n converges to L if for every epsilon > 0 there exists N such that |x_n - L| < epsilon for all n > N."
-
-- id: "def-cauchy"
-  term: "Cauchy Sequence"
-  content: "A sequence where the terms become arbitrarily close to each other as the sequence progresses."
-
-- id: "def-bounded"
-  term: "Bounded Sequence"
-  content: "A sequence is bounded if there exists a real number M such that |x_n| <= M for all n."
+- id: def-bounded
+  term: Bounded Sequence
+  content: A sequence is bounded if there exists a real number M such that |x_n| <=
+    M for all n.
+- id: def-cauchy
+  term: Cauchy Sequence
+  content: A sequence where the terms become arbitrarily close to each other as the
+    sequence progresses.
+- id: def-seq-limit
+  term: Limit of a sequence
+  content: A sequence x_n converges to L if for every epsilon > 0 there exists N such
+    that |x_n - L| < epsilon for all n > N.

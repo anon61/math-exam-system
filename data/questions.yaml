@@ -1,17 +1,177 @@
-- id: "qn-limit-proof"
+- id: qn-calc-integral
+  year: 2024
+  lecturer: Prof. Gauss
+  topic: Calculus
+  given: |-
+    Let $f(x) = x^2 e^x$.
+  to_prove: |-
+    Calculate $integral_0^1 f(x) dif x$.
+  hint: Use integration by parts twice.
+  answer_steps:
+  - type: Calculation
+    title: Step 1
+    content: |-
+      Let $u = x^2$ and $dif v = e^x dif x$.
+    proof: null
+  - type: Result
+    title: Final Answer
+    content: |-
+      $e - 2$.
+    proof: null
+- id: qn-comb-pascal
   year: 2023
-  lecturer: "Dr. Smith"
-  topic: "Limits"
+  lecturer: Dr. Pascal
+  topic: Combinatorics
+  given: |-
+    Expression $(x+y)^4$.
+  to_prove: Expand using the Binomial Theorem.
+  hint: Coefficients are 1, 4, 6, 4, 1.
+  answer_steps:
+  - type: Result
+    title: Expansion
+    content: |-
+      $x^4 + 4x^3 y + 6x^2 y^2 + 4x y^3 + y^4$.
+    proof: null
+- id: qn-complex-roots
+  year: 2024
+  lecturer: Prof. Euler
+  topic: Complex Analysis
+  given: |-
+    Consider $z^3 = 1$.
+  to_prove: |-
+    Find all roots of unity in the form $a + b i$.
+  hint: |-
+    Use De Moivre's Theorem: $e^(i theta) = cos(theta) + i sin(theta)$.
+  answer_steps:
+  - type: Result
+    title: Roots
+    content: |-
+      $1, (-1 + i sqrt(3))/2, (-1 - i sqrt(3))/2$.
+    proof: null
+- id: qn-limit-proof
+  year: 2023
+  lecturer: Dr. Smith
+  topic: Limits
   given: |
     Let $x_n = (3n+1)/(n-2).$
   to_prove: |
     Prove that $lim(x_n) = 3.$
-  tools: "Direct Calculation"
-  common_mistakes: ""
-  hint: |
-    Use the definition of convergence.
+  tools: Direct Calculation
+  common_mistakes: ''
+  hint: 'Use the definition of convergence.
+
+    '
   answer_steps:
-    - type: "Proof"
-      title: "Scratch Work"
-      content: |
-        Find $N$ such that $|x_n - 3| < epsilon$.
+  - type: Proof
+    title: Scratch Work
+    content: |-
+      Find $N$ such that $|x_n - 3| < epsilon$.
+    proof: null
+- id: qn-limit-squeeze
+  year: 2022
+  lecturer: Dr. Smith
+  topic: Limits
+  given: |-
+    Let $x_n = (sin(n))/n$.
+  to_prove: |-
+    Prove that $lim(x_n) = 0$.
+  hint: |-
+    Use the Squeeze Theorem with $-1/n <= x_n <= 1/n$.
+  answer_steps:
+  - type: Proof
+    title: Bound
+    content: |-
+      Since $|sin(n)| <= 1$, we have $-1 <= sin(n) <= 1$.
+    proof: null
+- id: qn-linalg-eigen
+  year: 2025
+  lecturer: Prof. Noether
+  topic: Linear Algebra
+  given: |-
+    Let $A = mat(2, 1; 1, 2)$.
+  to_prove: |-
+    Find the eigenvalues of $A$.
+  hint: |-
+    Solve $det(A - lambda I) = 0$.
+  answer_steps:
+  - type: Calculation
+    title: Characteristic Eq
+    content: |-
+      $(2-lambda)^2 - 1 = 0$.
+    proof: null
+- id: qn-logic-imply
+  year: 2025
+  lecturer: Dr. Boole
+  topic: Logic
+  given: |-
+    Propositions $P$ and $Q$.
+  to_prove: |-
+    Show that $P => Q$ is equivalent to $not Q => not P$.
+  hint: Construct a truth table.
+  answer_steps:
+  - type: Proof
+    title: Contrapositive
+    content: This is the Law of Contrapositive.
+    proof: null
+- id: qn-series-ratio
+  year: 2023
+  lecturer: Dr. Cauchy
+  topic: Series
+  given: |-
+    Let $S = sum_(n=1)^infinity (n!)/(n^n)$.
+  to_prove: |-
+    Determine if $S$ converges.
+  hint: Use the Ratio Test.
+  answer_steps:
+  - type: Calculation
+    title: Ratio
+    content: |-
+      $lim_(n->infinity) |a_(n+1)/a_n| = 1/e < 1$.
+    proof: null
+- id: qn-set-demorgan
+  year: 2023
+  lecturer: Dr. Cantor
+  topic: Set Theory
+  given: |-
+    Let $A$ and $B$ be subsets of a universal set $U$.
+  to_prove: |-
+    Prove $(A union B)^c = A^c sect B^c$.
+  hint: Show mutual inclusion (LHS subset RHS and RHS subset LHS).
+  answer_steps:
+  - type: Proof
+    title: Forward Direction
+    content: |-
+      Let $x in (A union B)^c$. Then $x in.not A union B$.
+    proof: null
+- id: qn-top-open
+  year: 2025
+  lecturer: Prof. Haus
+  topic: Topology
+  given: |-
+    Let $X = RR$ with standard topology.
+  to_prove: |-
+    Prove that $(0, 1)$ is an open set.
+  hint: |-
+    Find a ball $B_epsilon(x)$ for every point.
+  answer_steps:
+  - type: Proof
+    title: Radius
+    content: |-
+      For any $x$, choose $epsilon = min(x, 1-x)$.
+    proof: null
+- id: qn-vec-dot
+  year: 2024
+  lecturer: Prof. Euclid
+  topic: Geometry
+  given: |-
+    Vectors $vec(u) = (1, 2)$ and $vec(v) = (3, -1)$.
+  to_prove: |-
+    Calculate the angle between $vec(u)$ and $vec(v)$.
+  hint: |-
+    Use $vec(u) dot vec(v) = |vec(u)| |vec(v)| cos(theta)$.
+  answer_steps:
+  - type: Calculation
+    title: Dot Product
+    content: |-
+      $1(3) + 2(-1) = 1$.
+    proof: null

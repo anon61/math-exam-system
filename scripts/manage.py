@@ -44,7 +44,7 @@ TYPE_TO_FILENAME_MAP = {
 def str_presenter(dumper, data):
     """
     Configures YAML to use the Block Style (|) for strings containing
-    math symbols like $, \, {, }, or newlines.
+    math symbols like $, \\, {, }, or newlines.
     This prevents PyYAML from escaping characters (e.g. changing '\' to '\\').
     """
     if len(data.splitlines()) > 1 or any(c in data for c in "$[]{}\\"):

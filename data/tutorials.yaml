@@ -1,4 +1,5 @@
-- id: "tut-01"
+- id: tut-01
   sequence: 1
-  lecture_ref: "lec-01"
-  example_question_ids: ["qn-limit-proof"]
+  lecture_ref: lec-01
+  example_question_ids:
+  - qn-limit-proof

@@ -1,5 +1,12 @@
-- id: "course-real1"
-  name: "Real Analysis I"
-  definition_sequence: ["def-seq-limit", "def-bounded", "def-cauchy"]
-  tool_sequence: ["tool-tri-ineq", "tool-bw"]
-  example_sequence: ["ex-harmonic", "ex-dirichlet"]
+- id: course-real1
+  name: Real Analysis I
+  definition_sequence:
+  - def-seq-limit
+  - def-bounded
+  - def-cauchy
+  tool_sequence:
+  - tool-tri-ineq
+  - tool-bw
+  example_sequence:
+  - ex-harmonic
+  - ex-dirichlet
