@@ -1,20 +1,24 @@
 # Project State Log
 
-## ✅ Completed: Phase 2.5 (Hardening & Testing)
-- [x] Verified `models.py` and `db_manager.py` with `tests/test_backend.py`.
-- [x] Confirmed integrity rules (unique IDs, dependency blocking) work.
+# Project State Log
 
-## 📅 Status: Phase 3 (User Interface)
-**Goal:** Build a robust CLI tool to interact with the database easily.
+## ✅ Completed: Phase 3 (CLI Implementation)
+- [x] **Created `scripts/manage.py`**: A new, unified CLI tool using `argparse`.
+- [x] **Obsoleted `add_question.py`**: The new tool replaces the old flat-file script.
+- [x] **Implemented `add`, `list`, `delete` commands**: The CLI provides core database manipulation functionalities.
+- [x] **Interactive `add` mode**: The `add` command interactively prompts the user for fields based on the data models in `models.py`.
+- [x] **Implemented Persistence**: The tool saves all changes made (additions, deletions) back to the correct YAML data files.
+- [x] **Hardened Data Models**: Fixed a bug where the `Example` model had a non-optional field that was missing from the data, preventing the DB from loading.
+
+## 📅 Status: Phase 3.5 (Testing and Verification)
+**Goal:** Ensure the new CLI and backend are robust before adding more features.
 
 ### 🏗️ Active Tasks (Todo)
-- [ ] **Create `scripts/manage.py`**: A unified CLI tool (using `argparse` or `typer`) to Add, Edit, and List nodes.
-    - *Why:* We replace the old `add_question.py` with a single tool that can handle Questions, Definitions, Tools, etc.
-- [ ] **Implement `add` command**: `python scripts/manage.py add question` (prompts for fields).
-- [ ] **Implement `edit` command**: `python scripts/manage.py edit question <id>` (loads data and allows modifying).
+- [ ] **Comprehensive Manual Testing**: The CLI tool and its interaction with the database need to be thoroughly tested by a human.
 
 ### 🛑 Current Blockers
-- None.
+- The interactive `add` command cannot be automatically tested and requires manual verification.
 
 ### 🧠 Context Log
 - **[2026-Feb-01]**: Backend verified. Moving to CLI construction.
+- **[2026-Feb-01]**: Completed `scripts/manage.py`. The tool is functional but requires manual testing before proceeding to the next development phase.

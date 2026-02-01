@@ -31,7 +31,7 @@ class Example(KnowledgeNode):
     name: str
     type: ExampleType
     content: str
-    related_definition_ids: List[str]
+    related_definition_ids: List[str] = field(default_factory=list)
 
 @dataclass
 class Mistake(KnowledgeNode):
