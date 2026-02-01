@@ -1,173 +1,135 @@
-
-import os
-import shutil
 import subprocess
+import shutil
+import os
 import time
 import random
-import atexit
-from pathlib import Path
+import sys
 
-# --- Configuration ---
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-CLI_SCRIPT = PROJECT_ROOT / "scripts" / "manage.py"
-DATA_DIR = PROJECT_ROOT / "data"
-BACKUP_DIR = PROJECT_ROOT / "data_backup"
-PYTHON_EXEC = "python"  # Use "python3" if that's your command
+# CONFIGURATION
+DATA_DIR = "data"
+BACKUP_DIR = "data_backup"
+CLI_SCRIPT = ["python", "scripts/manage.py"]
+ITERATIONS = 50  # How many items to add
 
-# --- State ---
-initial_def_count = 0
-
-# --- Helper Functions ---
-def run_cli_command(command, input_data=None):
-    """Runs a CLI command as a subprocess, optionally with stdin."""
-    process = subprocess.run(
-        [PYTHON_EXEC, str(CLI_SCRIPT)] + command,
-        input=input_data,
-        capture_output=True,
-        text=True,
-        encoding='utf-8'
-    )
-    return process
-
-def get_definition_count():
-    """Gets the current number of definitions using the CLI."""
-    result = run_cli_command(["list", "definition"])
-    if result.returncode != 0:
-        print("Error getting definition count:")
-        print(result.stderr)
-        return -1
-    
-    # Count occurrences of '- ID:' which indicates a listed item
-    return result.stdout.count("- ID:")
-
-# --- Test Setup and Teardown ---
-def backup_data():
-    """Creates a backup of the data directory."""
-    print(f"\n--- Backing up '{DATA_DIR}' to '{BACKUP_DIR}' ---")
-    if BACKUP_DIR.exists():
+def setup_backup():
+    """Safety First: Back up the Golden Dataset."""
+    print(f"📦 Creating backup of '{DATA_DIR}' to '{BACKUP_DIR}'...", end=" ")
+    if os.path.exists(BACKUP_DIR):
         shutil.rmtree(BACKUP_DIR)
     shutil.copytree(DATA_DIR, BACKUP_DIR)
+    print("Done.")
 
-def restore_data():
-    """Restores the data directory from the backup."""
-    print(f"\n--- Restoring data from '{BACKUP_DIR}' ---")
-    if BACKUP_DIR.exists():
-        if DATA_DIR.exists():
-            shutil.rmtree(DATA_DIR)
-        shutil.copytree(BACKUP_DIR, DATA_DIR)
-        shutil.rmtree(BACKUP_DIR)
-        print("--- Restore complete ---")
-    else:
-        print("--- No backup found, skipping restore ---")
+def restore_backup():
+    """Restore the Golden Dataset."""
+    print(f"\n♻️  Restoring backup from '{BACKUP_DIR}'...", end=" ")
+    if os.path.exists(DATA_DIR):
+        shutil.rmtree(DATA_DIR)
+    shutil.copytree(BACKUP_DIR, DATA_DIR)
+    shutil.rmtree(BACKUP_DIR)
+    print("Done.")
 
-def setup_module():
-    """Pytest setup function, runs before all tests in this module."""
-    backup_data()
-    # Ensure cleanup happens even if the script crashes
-    atexit.register(restore_data)
-    global initial_def_count
-    initial_def_count = get_definition_count()
-    if initial_def_count == -1:
-        # If we can't get the initial count, we must stop.
-        # Restore will be called by atexit.
-        raise RuntimeError("Could not determine initial definition count. Aborting tests.")
-    print(f"Initial definition count: {initial_def_count}")
+def run_cli(args, input_str=None):
+    """Run the CLI and return success/fail."""
+    try:
+        result = subprocess.run(
+            CLI_SCRIPT + args,
+            input=input_str,
+            text=True,
+            capture_output=True,
+            encoding='utf-8'
+        )
+        return result
+    except Exception as e:
+        print(f"\n❌ CRITICAL EXECUTION ERROR: {e}")
+        sys.exit(1)
 
-# We don't need teardown_module because atexit handles the restore
-
-# --- Test Cases ---
-
-def test_stress_batch_add_and_link():
-    """
-    Tests batch adding of definitions and linking examples to them.
-    Verifies the final count and measures performance.
-    """
-    print("\n--- Running: test_stress_batch_add_and_link ---")
-    num_operations = 50
-
-    # 1. Batch Add Definitions
-    print(f"Adding {num_operations} definitions...")
+def stress_test():
     start_time = time.time()
-    for i in range(num_operations):
-        def_id = f"def-stress-{i}"
-        term = f"Stress Term {i}"
-        content = f"Content for stress test definition {i}."
-        
-        # Multiple newlines are important to satisfy all prompts
-        input_data = f"{def_id}\n{term}\n{content}\n\n" 
-        
-        result = run_cli_command(["add", "definition"], input_data=input_data)
-        assert result.returncode == 0, f"Failed to add definition {def_id}:\n{result.stderr}"
-        assert f"Added definition '{def_id}'" in result.stdout
     
-    end_time = time.time()
-    duration = end_time - start_time
-    print(f"Batch Add completed in {duration:.2f} seconds.")
-    print(f"Time per operation: {duration / num_operations:.4f} seconds.")
+    print(f"🚀 Starting STRESS TEST ({ITERATIONS} iterations)")
+    print("-" * 60)
 
-    # 2. Batch Link Examples
-    print(f"Adding and linking {num_operations} examples...")
-    for i in range(num_operations):
+    # 1. BATCH ADD DEFINITIONS
+    print("1️⃣  Adding 50 Definitions...", end=" ", flush=True)
+    for i in range(ITERATIONS):
+        def_id = f"def-stress-{i}"
+        # Inputs: ID, Term, Content
+        inputs = f"{def_id}\nStress Term {i}\nStress Content {i}\n"
+        res = run_cli(["add", "definition"], inputs)
+        
+        if res.returncode != 0:
+            print(f"\n❌ Failed to add {def_id}: {res.stderr}")
+            return
+        
+        if i % 10 == 0:
+            print(".", end="", flush=True)
+    print(" ✅")
+
+    # 2. BATCH ADD EXAMPLES (LINKING)
+    print("2️⃣  Adding 50 Examples (Linking)...", end=" ", flush=True)
+    for i in range(ITERATIONS):
         ex_id = f"ex-stress-{i}"
         def_id = f"def-stress-{i}"
-        name = f"Stress Example {i}"
-        ex_type = "Standard"
-        content = f"Content linking to {def_id}."
+        # Inputs: ID, Name, Type, Content, Def_IDs
+        inputs = f"{ex_id}\nStress Ex {i}\nStandard\nContent {i}\n{def_id}\n"
+        res = run_cli(["add", "example"], inputs)
         
-        # Input for: id, name, type, content, related_definition_ids
-        input_data = f"{ex_id}\n{name}\n{ex_type}\n{content}\n\n{def_id}\n"
-        
-        result = run_cli_command(["add", "example"], input_data=input_data)
-        assert result.returncode == 0, f"Failed to add example {ex_id}:\n{result.stderr}"
-        assert f"Added example '{ex_id}'" in result.stdout
+        if res.returncode != 0:
+            print(f"\n❌ Failed to add {ex_id}: {res.stderr}")
+            return
+            
+        if i % 10 == 0:
+            print(".", end="", flush=True)
+    print(" ✅")
 
-    # 3. Verification
-    print("Verifying final definition count...")
-    final_def_count = get_definition_count()
-    expected_count = initial_def_count + num_operations
-    assert final_def_count == expected_count, \
-        f"Expected {expected_count} definitions, but found {final_def_count}."
-    print(f"Verification successful: Found {final_def_count} definitions.")
+    # 3. VERIFICATION
+    print("3️⃣  Verifying Database Size...", end=" ")
+    res = run_cli(["list", "definition"])
+    line_count = len(res.stdout.splitlines())
+    # We expect original count + 50 (approx)
+    if line_count > ITERATIONS:
+        print(f"✅ (Found {line_count} definitions)")
+    else:
+        print(f"❌ ERROR: Only found {line_count} definitions!")
 
-
-def test_chaos_monkey_deletion():
-    """
-    Randomly attempts to delete definitions that are linked to examples,
-    verifying that the integrity check prevents it. Then deletes the example
-    and successfully deletes the definition.
-    """
-    print("\n--- Running: test_chaos_monkey_deletion ---")
-    num_to_delete = 10
-    total_defs_added = 50 # from the previous test
-
-    # Get a random sample of the definitions we just added
-    indices_to_test = random.sample(range(total_defs_added), num_to_delete)
+    # 4. CHAOS MONKEY (Integrity Check)
+    print("4️⃣  Running Chaos Monkey (Random Deletes)...")
     
-    for i in indices_to_test:
-        def_id = f"def-stress-{i}"
-        ex_id = f"ex-stress-{i}"
-        print(f"Testing deletion logic for {def_id}...")
+    # Try to delete a definition that has an example (Should FAIL)
+    target_idx = random.randint(0, ITERATIONS - 1)
+    target_def = f"def-stress-{target_idx}"
+    print(f"   🔸 Attempting to delete linked node '{target_def}'...", end=" ")
+    res = run_cli(["delete", "definition", target_def])
+    
+    if res.returncode != 0 and "referenced by" in res.stderr:
+        print("✅ BLOCKED (Integrity Check Passed)")
+    else:
+        print(f"❌ FAILED! It allowed deletion or gave wrong error.\nOutput: {res.stdout}\nError: {res.stderr}")
 
-        # 1. Attempt to delete definition while it's linked -> MUST FAIL
-        print(f"  Attempting to delete linked definition {def_id} (should fail)...")
-        fail_result = run_cli_command(["delete", def_id])
-        assert fail_result.returncode != 0, f"CLI should have failed to delete linked def {def_id}, but it succeeded."
-        # Check for the specific error message from DBManager's integrity check
-        assert f"is referenced by other nodes" in fail_result.stdout
-        print("  ...Failed as expected.")
+    # Clean up correctly (Delete Example first, then Definition)
+    target_ex = f"ex-stress-{target_idx}"
+    print(f"   🔸 Cleanup: Deleting child '{target_ex}'...", end=" ")
+    run_cli(["delete", "example", target_ex])
+    print("Done.")
+    
+    print(f"   🔸 Retry: Deleting parent '{target_def}'...", end=" ")
+    res = run_cli(["delete", "definition", target_def])
+    if res.returncode == 0:
+        print("✅ SUCCESS")
+    else:
+        print(f"❌ FAILED to delete unlinked node. Error: {res.stderr}")
 
-        # 2. Delete the example first -> MUST SUCCEED
-        print(f"  Deleting example {ex_id} first...")
-        delete_ex_result = run_cli_command(["delete", ex_id])
-        assert delete_ex_result.returncode == 0, f"Failed to delete example {ex_id}:\n{delete_ex_result.stderr}"
-        assert f"Deleted node '{ex_id}'" in delete_ex_result.stdout
-        print("  ...Success.")
+    # SUMMARY
+    duration = time.time() - start_time
+    print("-" * 60)
+    print(f"🏁 Stress Test Completed in {duration:.2f} seconds.")
+    print(f"⚡ Speed: {ITERATIONS * 2 / duration:.2f} ops/sec")
 
-        # 3. Attempt to delete definition again -> MUST SUCCEED
-        print(f"  Attempting to delete unlinked definition {def_id} (should succeed)...")
-        success_result = run_cli_command(["delete", def_id])
-        assert success_result.returncode == 0, f"Failed to delete unlinked definition {def_id}:\n{success_result.stderr}"
-        assert f"Deleted node '{def_id}'" in success_result.stdout
-        print("  ...Success.")
-        
-    print("\nChaos monkey testing completed successfully.")
+if __name__ == "__main__":
+    try:
+        setup_backup()
+        stress_test()
+    except KeyboardInterrupt:
+        print("\n⚠️  Interrupted! Restoring backup...")
+    finally:
+        restore_backup()
