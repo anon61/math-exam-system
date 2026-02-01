@@ -1,16 +1,18 @@
 - id: "qn-limit-proof"
   year: 2023
   lecturer: "Dr. Smith"
-  topic: "Limits"
+  topic: "Limits of Sequences"
   given: |
     Let $x_n = (3n+1)/(n-2).$
-  to_prove: "Prove that $lim(x_n) = 3$."
-  hint: "Use the definition of convergence."
-  tool_ids: ["tool-tri-ineq"]
-  mistake_ids: ["err-sign"]
-  example_ids: []
+  to_prove: |
+    Prove that $lim(x_n) = 3.$
+  tools: "Direct Calculation"
+  common_mistakes: ""
+  hint: |
+    Use the definition of convergence.
+  answer_steps:
   answer_steps:
     - type: "Proof"
       title: "Scratch Work"
       content: |
-        Find N such that |x_n - 3| < epsilon.
+        Find $N$ such that $|x_n - 3| < epsilon$.

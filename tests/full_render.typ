@@ -1,7 +1,7 @@
 #import "../src/lib.typ": *
 
 #set page(paper: "a4", margin: 1cm)
-#set text(font: "Times New Roman", size: 10pt)
+#set text(font: "New Computer Modern Math", size: 10pt)
 
 = 🛡️ Full Database Render Test
 _This document renders every node to ensure no runtime errors._
