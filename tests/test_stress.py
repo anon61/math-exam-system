@@ -53,8 +53,8 @@ def stress_test():
     print("1️⃣  Adding 50 Definitions...", end=" ", flush=True)
     for i in range(ITERATIONS):
         def_id = f"def-stress-{i}"
-        # Inputs: ID, Term, Content
-        inputs = f"{def_id}\nStress Term {i}\nStress Content {i}\n"
+        # Inputs: ID, Term, Content (note the extra \n to finish content)
+        inputs = f"{def_id}\nStress Term {i}\nStress Content {i}\n\n"
         res = run_cli(["add", "definition"], inputs)
         
         if res.returncode != 0:
@@ -71,7 +71,7 @@ def stress_test():
         ex_id = f"ex-stress-{i}"
         def_id = f"def-stress-{i}"
         # Inputs: ID, Name, Type, Content, Def_IDs
-        inputs = f"{ex_id}\nStress Ex {i}\nStandard\nContent {i}\n{def_id}\n"
+        inputs = f"{ex_id}\nStress Ex {i}\nStandard\nContent {i}\n\n{def_id}\n"
         res = run_cli(["add", "example"], inputs)
         
         if res.returncode != 0:
@@ -99,9 +99,12 @@ def stress_test():
     target_idx = random.randint(0, ITERATIONS - 1)
     target_def = f"def-stress-{target_idx}"
     print(f"   🔸 Attempting to delete linked node '{target_def}'...", end=" ")
-    res = run_cli(["delete", "definition", target_def])
     
-    if res.returncode != 0 and "referenced by" in res.stderr:
+    # FIX: Removed "definition" from args. It's just `delete <id>`
+    res = run_cli(["delete", target_def]) 
+    
+    # The CLI prints errors to stdout and exits 0, so we check stdout for the error message.
+    if "[Error]" in res.stdout and "referenced by" in res.stdout:
         print("✅ BLOCKED (Integrity Check Passed)")
     else:
         print(f"❌ FAILED! It allowed deletion or gave wrong error.\nOutput: {res.stdout}\nError: {res.stderr}")
@@ -109,11 +112,14 @@ def stress_test():
     # Clean up correctly (Delete Example first, then Definition)
     target_ex = f"ex-stress-{target_idx}"
     print(f"   🔸 Cleanup: Deleting child '{target_ex}'...", end=" ")
-    run_cli(["delete", "example", target_ex])
+    
+    # FIX: Removed "example" from args
+    run_cli(["delete", target_ex])
     print("Done.")
     
     print(f"   🔸 Retry: Deleting parent '{target_def}'...", end=" ")
-    res = run_cli(["delete", "definition", target_def])
+    # FIX: Removed "definition" from args
+    res = run_cli(["delete", target_def])
     if res.returncode == 0:
         print("✅ SUCCESS")
     else:
