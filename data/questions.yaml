@@ -1,7 +1,7 @@
 - id: "qn-limit-proof"
   year: 2023
   lecturer: "Dr. Smith"
-  topic: "Limits of Sequences"
+  topic: "Limits"
   given: |
     Let $x_n = (3n+1)/(n-2).$
   to_prove: |
@@ -10,7 +10,6 @@
   common_mistakes: ""
   hint: |
     Use the definition of convergence.
-  answer_steps:
   answer_steps:
     - type: "Proof"
       title: "Scratch Work"
