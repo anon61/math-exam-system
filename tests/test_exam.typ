@@ -1,7 +1,7 @@
 #import "../src/lib.typ": *
 
 #set page(paper: "a4", margin: 2cm)
-#set text(font: "Linux Libertine", size: 11pt)
+#set text(font: "Times New Roman", size: 11pt)
 
 = Math Exam Engine Test
 _Generated on #datetime.today().display()_
