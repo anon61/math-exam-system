@@ -1,7 +1,6 @@
-#import "src/lib.typ": get-questions, render-worksheet, exam-doc
+#import "src/lib.typ": def, tool, ex, mistake
 
-#show: doc => exam-doc(title: "Real Analysis Exam", doc)
-// FIX: Added leading slash '/' to make path absolute from project root
-#let questions = get-questions("/data/questions.yaml")
-
-#render-worksheet(questions)
+// Now you can use them:
+In this section, we study the #def("def-bounded").
+One key property is the #tool("tool-tri-ineq").
+Consider the #ex("ex-harmonic") as a case study.
