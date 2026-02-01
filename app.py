@@ -2,154 +2,152 @@ import streamlit as st
 import sys
 from pathlib import Path
 
-# Add project root to path so we can import scripts
+# Setup Path
 PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.append(str(PROJECT_ROOT))
 
 from scripts.db_manager import DBManager
-from scripts.build_exam import generate_exam, render_preview
+from scripts.build_exam import generate_exam, render_node_preview
 
-# --- 1. CONFIGURATION & STATE ---
-st.set_page_config(page_title="Math Exam Pro", page_icon="✨", layout="wide")
+# --- PAGE CONFIG ---
+st.set_page_config(layout="wide", page_title="Math Exam System", page_icon="📐")
 
-# Initialize session state for selections and previews
-if 'selected_ids' not in st.session_state:
-    st.session_state['selected_ids'] = []
-if 'last_previewed' not in st.session_state:
-    st.session_state['last_previewed'] = None
-if 'preview_svg' not in st.session_state:
-    st.session_state['preview_svg'] = None
-if 'preview_error' not in st.session_state:
-    st.session_state['preview_error'] = None
+# --- SESSION STATE ---
+if "selected_questions" not in st.session_state:
+    st.session_state.selected_questions = []
+if "last_preview" not in st.session_state:
+    st.session_state.last_preview = None 
+if "pdf_ready" not in st.session_state:
+    st.session_state.pdf_ready = None
 
-# --- 2. DATA LOADING ---
+# --- DATA LOADING ---
 @st.cache_data
-def load_data():
-    """Cached loader for the question database."""
-    db = DBManager(PROJECT_ROOT / "data")
-    questions = list(db.questions.values())
-    # Sort for consistent display
-    return sorted(questions, key=lambda q: (q.year, q.topic, q.id), reverse=True)
+def get_db():
+    return DBManager(PROJECT_ROOT / "data")
 
 try:
-    all_questions = load_data()
-    topics = sorted(list(set(q.topic for q in all_questions if q.topic)))
-    years = sorted(list(set(q.year for q in all_questions if q.year)), reverse=True)
-    lecturers = sorted(list(set(q.lecturer for q in all_questions if q.lecturer)))
+    db = get_db()
 except Exception as e:
-    st.error(f"Failed to load database: {e}")
+    st.error(f"Database Error: {e}")
     st.stop()
 
-# --- 3. SIDEBAR FILTERS ---
-st.sidebar.title("🔍 Filter Questions")
-selected_topics = st.sidebar.multiselect("Topics", topics, default=st.session_state.get('topics_filter'))
-selected_years = st.sidebar.multiselect("Years", years, default=st.session_state.get('years_filter'))
-selected_lecturers = st.sidebar.multiselect("Lecturers", lecturers, default=st.session_state.get('lecturers_filter'))
+# --- SIDEBAR ---
+st.sidebar.title("🎛️ Controls")
+st.sidebar.info(f"Database contains {len(db.questions)} Questions.")
 
-# Persist filters
-st.session_state['topics_filter'] = selected_topics
-st.session_state['years_filter'] = selected_years
-st.session_state['lecturers_filter'] = selected_lecturers
+# --- HELPER: PREVIEW FUNCTION ---
+def show_preview(node):
+    with st.spinner(f"Rendering {node.id}..."):
+        img_path, error_msg = render_node_preview(node)
+        
+        if img_path:
+            st.session_state.last_preview = img_path
+        else:
+            st.error(f"Rendering failed:\n{error_msg}")
 
+# --- MAIN TABS ---
+tab1, tab2 = st.tabs(["📝 Exam Builder", "📚 Knowledge Base"])
 
-# --- 4. FILTERING LOGIC ---
-filtered_questions = all_questions
-if selected_topics:
-    filtered_questions = [q for q in filtered_questions if q.topic in selected_topics]
-if selected_years:
-    filtered_questions = [q for q in filtered_questions if q.year in selected_years]
-if selected_lecturers:
-    filtered_questions = [q for q in filtered_questions if q.lecturer in selected_lecturers]
+# === TAB 1: EXAM BUILDER ===
+with tab1:
+    col_left, col_right = st.columns([0.6, 0.4])
 
+    with col_left:
+        st.subheader("Question Bank")
+        filter_topic = st.text_input("🔍 Search Topic (e.g., 'Calculus')", "")
+        
+        candidates = list(db.questions.values())
+        if filter_topic:
+            candidates = [q for q in candidates if filter_topic.lower() in (q.topic or "").lower()]
 
-# --- 5. UI LAYOUT ---
-st.title("🚀 Math Exam Pro")
-st.markdown("Advanced filtering and live previews.")
-
-col1, col2 = st.columns([0.5, 0.5])
-
-# --- COLUMN 1: QUESTION BROWSER ---
-with col1:
-    st.header(f"Browse Questions ({len(filtered_questions)})")
-    
-    for q in filtered_questions:
-        with st.container():
-            is_selected = q.id in st.session_state.selected_ids
-            
-            sub_col1, sub_col2, sub_col3 = st.columns([0.1, 0.7, 0.2])
-            
-            with sub_col1:
-                st.checkbox("", value=is_selected, key=f"cb_{q.id}", disabled=True) # Visually disabled, logic is manual
-
-            with sub_col2:
-                st.markdown(f"**{q.topic or 'General'}** ({q.year or 'N/A'}) - {q.lecturer or 'N/A'}")
-                st.caption(f"`{q.id}`")
-
-            with sub_col3:
-                # Preview Button
-                if st.button("👁️ Preview", key=f"preview_{q.id}"):
-                    st.session_state.last_previewed = q.id
-                    with st.spinner("Rendering SVG..."):
-                        svg_path, error_msg = render_preview(q, PROJECT_ROOT)
-                        if svg_path:
-                            st.session_state.preview_svg = str(svg_path)
-                            st.session_state.preview_error = None
-                        else:
-                            st.session_state.preview_svg = None
-                            st.session_state.preview_error = error_msg
+        with st.container(height=500):
+            for q in candidates:
+                c1, c2, c3 = st.columns([0.1, 0.7, 0.2])
                 
-                # Add/Remove Button
-                if is_selected:
-                    if st.button("➖ Remove", key=f"rem_{q.id}"):
-                        st.session_state.selected_ids.remove(q.id)
-                        st.rerun()
-                else:
-                    if st.button("➕ Add", key=f"add_{q.id}"):
-                        st.session_state.selected_ids.append(q.id)
-                        st.rerun()
+                is_selected = q.id in st.session_state.selected_questions
+                # FIX: Added label_visibility to fix warning
+                if c1.checkbox("Select", key=f"chk_{q.id}", value=is_selected, label_visibility="collapsed"):
+                    if q.id not in st.session_state.selected_questions:
+                        st.session_state.selected_questions.append(q.id)
+                elif q.id in st.session_state.selected_questions:
+                    st.session_state.selected_questions.remove(q.id)
+                
+                c2.markdown(f"**{q.topic}** ({q.year})  \n`{q.id}`")
+                
+                if c3.button("👁️", key=f"btn_prev_{q.id}"):
+                    show_preview(q)
+                st.divider()
 
+    with col_right:
+        st.subheader("Your Exam")
+        if not st.session_state.selected_questions:
+            st.info("No questions selected.")
+        else:
+            st.write(f"Selected **{len(st.session_state.selected_questions)}** questions.")
+            with st.expander("View Selected IDs"):
+                st.write(st.session_state.selected_questions)
+            
+            if st.button("🚀 Compile PDF"):
+                pdf_path = generate_exam(
+                    filename="final_exam",
+                    specific_ids=st.session_state.selected_questions
+                )
+                if pdf_path:
+                    st.session_state.pdf_ready = str(pdf_path)
+                    st.success("Compilation Complete!")
+                else:
+                    st.error("Compilation Failed.")
+
+            if st.session_state.pdf_ready:
+                with open(st.session_state.pdf_ready, "rb") as f:
+                    st.download_button(
+                        label="📥 Download Exam PDF",
+                        data=f,
+                        file_name="My_Math_Exam.pdf",
+                        mime="application/pdf"
+                    )
+
+        st.subheader("Live Preview")
+        if st.session_state.last_preview:
+            # FIX: Fit to container + Fixed width generation = Perfect scaling
+            st.image(st.session_state.last_preview, caption="Rendered Output", use_container_width=True)
+        else:
+            st.caption("Click the eye icon 👁️ to preview a question.")
+
+# === TAB 2: KNOWLEDGE BASE ===
+with tab2:
+    st.markdown("### 📖 Browse Definitions, Tools & Mistakes")
+    kb_type = st.radio("Select Category:", ["Definitions", "Tools", "Mistakes"], horizontal=True)
+    
+    if kb_type == "Definitions":
+        items = list(db.definitions.values())
+    elif kb_type == "Tools":
+        items = list(db.tools.values())
+    else:
+        items = list(db.mistakes.values())
+        
+    kb_search = st.text_input("Filter Items", "")
+    if kb_search:
+        items = [i for i in items if kb_search.lower() in str(i.__dict__).lower()]
+
+    k_col1, k_col2 = st.columns([0.5, 0.5])
+    
+    with k_col1:
+        st.caption("Select an item to view:")
+        for item in items:
+            label = getattr(item, 'name', getattr(item, 'description', item.id))
+            
+            kc1, kc2 = st.columns([0.8, 0.2])
+            kc1.write(f"**{item.id}**")
+            kc1.caption(label[:60] + "...")
+            
+            if kc2.button("👁️", key=f"kb_prev_{item.id}"):
+                show_preview(item)
             st.divider()
 
-# --- COLUMN 2: CART & PREVIEW ---
-with col2:
-    # --- Shopping Cart ---
-    st.header("🛒 Exam Cart")
-    if not st.session_state.selected_ids:
-        st.info("Your cart is empty. Add questions from the browser on the left.")
-    else:
-        st.markdown(f"You have selected **{len(st.session_state.selected_ids)}** questions.")
-        for qid in st.session_state.selected_ids:
-            st.caption(f"- `{qid}`")
-        
-        if st.button("🚀 Compile Exam PDF", type="primary"):
-            if not st.session_state.selected_ids:
-                st.warning("Please select at least one question!")
-            else:
-                with st.spinner("Compiling Typst Document..."):
-                    pdf_path = generate_exam(
-                        filename="web_exam",
-                        specific_ids=st.session_state.selected_ids
-                    )
-                    if pdf_path and pdf_path.exists():
-                        st.success("Exam Generated Successfully!")
-                        with open(pdf_path, "rb") as f:
-                            st.download_button("📥 Download PDF", f.read(), "exam.pdf", "application/pdf")
-                    else:
-                        st.error("Compilation failed. Check terminal logs.")
-
-    st.divider()
-    
-    # --- Live Preview ---
-    st.header("🖼️ Live Preview")
-    if st.session_state.last_previewed:
-        st.caption(f"Showing preview for: `{st.session_state.last_previewed}`")
-        
-        if st.session_state.preview_svg:
-            st.image(st.session_state.preview_svg)
-        elif st.session_state.preview_error:
-            st.error("Failed to render preview. Error log:")
-            st.code(st.session_state.preview_error, language="bash")
+    with k_col2:
+        st.subheader("Rendered View")
+        if st.session_state.last_preview:
+            st.image(st.session_state.last_preview, use_container_width=True)
         else:
-            st.info("Click a 'Preview' button to see the question here.")
-    else:
-        st.info("Click 'Preview' on any question to see it here.")
+            st.info("Select an item on the left.")
