@@ -1,6 +1,6 @@
 # Project State Log
 
-## ✅ Completed: Phases 1-6
+## ✅ Completed: Phases 1-7
 - **Architecture:** 8-Layer Knowledge Graph is live.
 - **Backend:** `db_manager.py` loads data and enforces Referential Integrity.
 - **CLI:** `manage.py` allows interactive Adding/Deleting of nodes.
@@ -10,6 +10,7 @@
 - **Exam Engine:** The `#question` function, solution toggling, and testing suites are complete.
 - **System Integrity:** Data, visual, and logic integrity are enforced by scripts and tests. The system is stable.
 - **Exam Factory:** The `build_exam.py` script can successfully query the database and compile a PDF exam.
+- **Professor's Cockpit (Web GUI):** The `app.py` Streamlit application provides a user-friendly interface for browsing questions and compiling custom exams.
 
 ## 📅 Status: Awaiting Next Phase
-The Exam Factory is complete. Waiting for the definition of the next project phase.
+The Web GUI is complete. The system is now a user-friendly product. Waiting for the definition of the next project phase.

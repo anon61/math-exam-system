@@ -10,7 +10,6 @@ sys.path.append(str(PROJECT_ROOT))
 
 from scripts.db_manager import DBManager
 
-# Template using standard Windows fonts
 TEMPLATE = """
 #import "src/lib.typ": *
 
@@ -31,38 +30,55 @@ TEMPLATE = """
 #align(center)[*End of Examination*]
 """
 
-def generate_exam(topic=None, count=3, filename="generated_exam"):
-    print(f"Building Exam (Topic: {topic or 'Any'}, Questions: {count})...")
+def generate_exam(topic=None, count=3, filename="generated_exam", specific_ids=None):
+    """
+    Generates a PDF exam.
+    :param topic: Filter questions by topic (ignored if specific_ids is provided)
+    :param count: Number of random questions (ignored if specific_ids is provided)
+    :param specific_ids: A list of strings (Question IDs) to include exactly.
+    """
+    print(f"🏗️  Building Exam...")
     
     # 1. Load Database
     try:
         db = DBManager(PROJECT_ROOT / "data")
     except Exception as e:
-        print(f"Error loading database: {e}")
-        return
+        print(f"❌ Error loading database: {e}")
+        return None
 
-    # 2. Filter Questions
-    candidates = list(db.questions.values())
-    if topic:
-        # Case-insensitive topic matching
-        candidates = [q for q in candidates if q.topic and topic.lower() in q.topic.lower()]
-    
-    if not candidates:
-        print(f"No questions found for topic '{topic}'.")
-        return
+    selected = []
 
-    # Select random questions
-    if len(candidates) < count:
-        print(f"Warning: Requested {count} questions, but only found {len(candidates)}.")
-        selected = candidates
+    # 2. Selection Logic
+    if specific_ids:
+        # Manual Selection Mode (from GUI)
+        print(f"   -> Mode: Manual Selection ({len(specific_ids)} items)")
+        for qid in specific_ids:
+            if qid in db.questions:
+                selected.append(db.questions[qid])
+            else:
+                print(f"⚠️  Warning: Question ID '{qid}' not found.")
     else:
-        selected = random.sample(candidates, count)
+        # Random Mode (from CLI)
+        print(f"   -> Mode: Random Sampling (Topic: {topic or 'Any'}, Count: {count})")
+        candidates = list(db.questions.values())
+        if topic:
+            candidates = [q for q in candidates if q.topic and topic.lower() in q.topic.lower()]
+        
+        if not candidates:
+            print(f"❌ No questions found for topic '{topic}'.")
+            return None
+
+        if len(candidates) < count:
+            print(f"⚠️  Warning: Requested {count} questions, but only found {len(candidates)}.")
+            selected = candidates
+        else:
+            selected = random.sample(candidates, count)
 
     # 3. Build Typst Content
     typst_body = ""
     for i, q in enumerate(selected, 1):
         typst_body += f"== Question {i}\n"
-        typst_body += f'#question("{q.id}")\n\n'
+        typst_body += f"#question(\"{q.id}\")\n\n"
 
     # 4. Fill Template
     full_source = TEMPLATE.format(
@@ -75,18 +91,21 @@ def generate_exam(topic=None, count=3, filename="generated_exam"):
     with open(output_typ, "w", encoding="utf-8") as f:
         f.write(full_source)
     
-    print(f"Generated Typst file: {output_typ.name}")
+    print(f"✅ Generated Typst file: {output_typ.name}")
 
     # 6. Compile PDF
-    print("Compiling PDF...")
+    print("⚙️  Compiling PDF...")
+    output_pdf = PROJECT_ROOT / f"{filename}.pdf"
     try:
-        # We enforce root=. to allow imports from src/
         subprocess.run(["typst", "compile", "--root", ".", str(output_typ)], check=True)
-        print(f"Success! Exam ready: {filename}.pdf")
+        print(f"🎉 Success! Exam ready: {output_pdf.name}")
+        return output_pdf # Return path for the GUI to download
     except subprocess.CalledProcessError:
-        print("Error: Typst compilation failed.")
+        print("❌ Error: Typst compilation failed.")
+        return None
     except FileNotFoundError:
-        print("Error: Typst CLI not found. Is it installed?")
+        print("❌ Error: Typst CLI not found. Is it installed?")
+        return None
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a random math exam.")
