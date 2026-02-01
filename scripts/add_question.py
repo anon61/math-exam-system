@@ -11,7 +11,7 @@ def get_multiline_input(prompt):
     """
     Captures multi-line input from the user.
     """
-    print(f"\n📘 {prompt}")
+    print(f"\n* {prompt}")
     print("   (Type your text. Press ENTER twice to finish.)")
     
     lines = []
@@ -33,11 +33,11 @@ def get_single_input(prompt, default=None):
     Captures a single line of input.
     """
     if default:
-        user_input = input(f"\n🔹 {prompt} [{default}]: ").strip()
+        user_input = input(f"\n* {prompt} [{default}]: ").strip()
         return user_input if user_input else default
     else:
         while True:
-            user_input = input(f"\n🔹 {prompt}: ").strip()
+            user_input = input(f"\n* {prompt}: ").strip()
             if user_input:
                 return user_input
 
@@ -66,10 +66,10 @@ def append_to_yaml(data):
     try:
         with open(DATA_FILE, "a", encoding="utf-8") as f:
             f.write(entry)
-        print(f"\n✅ Success! Question '{data['id']}' added to:")
+        print(f"\nSuccess! Question '{data['id']}' added to:")
         print(f"   {DATA_FILE}")
     except Exception as e:
-        print(f"\n❌ Error writing file: {e}")
+        print(f"\nError writing file: {e}")
 
 def main():
     print("==========================================")
