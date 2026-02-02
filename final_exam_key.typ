@@ -15,37 +15,7 @@
 = Exam: General (KEY)
 
 == Question 1
-#question("qn-calc-integral")
-
-== Question 2
-#question("qn-comb-pascal")
-
-== Question 3
-#question("qn-complex-roots")
-
-== Question 4
-#question("qn-limit-proof")
-
-== Question 5
-#question("qn-limit-squeeze")
-
-== Question 6
-#question("qn-linalg-eigen")
-
-== Question 7
-#question("qn-logic-imply")
-
-== Question 8
-#question("qn-series-ratio")
-
-== Question 9
-#question("qn-vec-dot")
-
-== Question 10
-#question("qn-set-demorgan")
-
-== Question 11
-#question("qn-top-open")
+#question("qn-geometry-visual")
 
 
 

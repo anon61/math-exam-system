@@ -1,7 +1,7 @@
 
 #import "/src/lib.typ": *
 
-#show_solutions.update(false)
+#show_solutions.update(true)
 
 #set page(
   paper: "a4", 
@@ -12,10 +12,10 @@
 )
 #set text(font: "Times New Roman", size: 11pt)
 
-= Exam: General
+= Exam: General (KEY)
 
 == Question 1
-#question("qn-geometry-visual")
+#question("qn-series-ratio")
 
 
 

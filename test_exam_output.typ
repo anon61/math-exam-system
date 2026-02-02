@@ -15,7 +15,7 @@
 = Exam: General
 
 == Question 1
-#question("qn-geometry-visual")
+#question("qn-series-ratio")
 
 
 

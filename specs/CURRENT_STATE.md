@@ -1,27 +1,47 @@
 # Current System State
 
 **Date:** 2026-02-02
-**Phase:** Phase 1 Complete - System Stabilization
-**Status:** 🟢 Stable / Ready for AI Integration
+**Phase:** Phase 2 - Content Expansion & Visual Polish
+**Status:** 🟡 In Progress (Code Logic Stable / Assets & UI Pending)
 
 ## 1. System Health
-The core Exam Engine and Streamlit Dashboard are now fully operational and robust. The previous "fragile rendering" issues caused by missing YAML fields have been resolved via a defensive programming overhaul. The system can now gracefully handle incomplete data without crashing.
+* **Core Engine:** 🟢 **Stable.** The Python backend, Typst compiler, and data loading logic are robust. The "Schema Audit" has verified that `scripts/models.py` matches all YAML data fields.
+* **Streamlit App:** 🟢 **Operational.** The dashboard launches correctly using the new `launch.bat`.
+* **Assets:** 🔴 **Issue Detected.** The file `data/images/test_graph.png` is corrupted (0 bytes/empty), causing preview rendering errors for questions that use it. `ball.jpg` is confirmed valid.
 
-## 2. Recent Changes (Stability Patch)
-### A. Typst Rendering Engine (`src/lib.typ`)
-* **Defensive Field Access:** Replaced all direct object access (e.g., `q.topic`) with `.at("key", default: ...)` to prevent compilation crashes on incomplete data.
-* **Dynamic Solutions Toggle:** Implemented `#let show_solutions = state(...)` to allow Python to control solution visibility dynamically.
-* **Safe Looping:** Added checks for `answer_steps` to ensure it defaults to an empty list if missing.
+## 2. Recent Changes (Completed)
+### A. Stability Patch (Phase 1)
+* **Defensive Typst (`src/lib.typ`):** Replaced unsafe field access with `.at("key", default: ...)` to prevent crashes.
+* **Schema Synchronization:** Updated `scripts/models.py` to strictly match every field found in the YAML database (added `common_mistakes`, `related_definition_ids`, etc.).
+* **Diagnostic Tooling:** Created `scripts/audit_data.py` and `scripts/verify_full_stack.py` for "A-Z" error checking.
+* **Robust Launcher:** Created `launch.bat` to bypass Windows PATH issues and perform self-checks before starting the UI.
 
-### B. Python Build Scripts (`scripts/build_exam.py`)
-* **Root Path Fix:** Added strict `--root` flag to Typst CLI calls to ensure absolute imports (e.g., `/src/lib.typ`) resolve correctly from any execution context.
-* **Encoding Safety:** Enforced `utf-8` encoding on all file I/O to prevent Windows character map errors.
+## 3. Active Plan: Phase 2 (Visuals & Content Expansion)
+**Goal:** Upgrade the Knowledge Base to support all academic data types and fix visual rendering.
 
-### C. Streamlit Dashboard (`app.py`)
-* **Initialization Order:** Fixed `st.set_page_config` to be the strictly first executable command.
-* **Path Injection:** Corrected `sys.path` modification order to ensure `scripts` modules are importable.
-* **UI Updates:** Deprecated `use_column_width` replaced with `use_container_width`.
+### Step 1: Asset Repair 🛠️
+* **Task:** Replace the corrupted `data/images/test_graph.png` with a valid placeholder image.
+* **Status:** **Pending Action** (Manual file replacement required).
 
-## 3. Immediate Next Steps
-* **Phase 2:** Begin "AI Data Ingestion" pipeline.
-* **Feature:** Implement automated importer for raw text questions.
+### Step 2: Typst Visual Upgrade (`src/lib.typ`) 🎨
+* **Task:** Replace plain text rendering with a "Card System".
+* **Details:**
+    * Create a `#kb-card(title, color, icon, body)` helper function.
+    * Update `def()`, `tool()`, and `mistake()` to use these cards.
+    * Implement new renderers: `#ex()` (Examples), `#lecture()` (Lectures), and `#tutorial()` (Tutorials).
+    * Assign distinct colors (e.g., Purple for Tools, Red for Mistakes, Blue for Defs).
+
+### Step 3: Backend Expansion (`scripts/`) ⚙️
+* **Task:** Enable the engine to load and preview the new data types.
+* **File:** `scripts/db_manager.py` -> Load `lectures.yaml` and `tutorials.yaml`.
+* **File:** `scripts/build_exam.py` -> Update `render_node_preview` to handle `Lecture` and `Tutorial` objects using the new Typst functions.
+
+### Step 4: Frontend Update (`app.py`) 🖥️
+* **Task:** Expose the new data to the User Interface.
+* **Details:**
+    * Update the "Knowledge Base" tab radio buttons to include: `Examples`, `Lectures`, `Tutorials`.
+    * Ensure the "Preview Eye 👁️" button works for these new types.
+
+## 4. Future Roadmap
+* **Phase 3:** AI Data Ingestion (Automated text-to-YAML importer).
+* **Phase 4:** Export to LaTeX/HTML (optional).
