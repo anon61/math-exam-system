@@ -3,17 +3,15 @@ import sys
 import os
 from pathlib import Path
 
-# --- 1. PAGE CONFIG (Must be first) ---
+# --- 1. PAGE CONFIG ---
 st.set_page_config(layout="wide", page_title="Math Exam System", page_icon="📐")
 
 # --- 2. SETUP PATHS ---
-# Ensure we can import from 'scripts' regardless of where 'streamlit run' is called
 current_file = Path(__file__).resolve()
 PROJECT_ROOT = current_file.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-# Now we can safely import
 from scripts.db_manager import DBManager
 from scripts.build_exam import generate_exam, render_node_preview
 
@@ -30,16 +28,14 @@ if "key_ready" not in st.session_state:
 # --- 4. DATA LOADING ---
 @st.cache_data
 def get_db():
-    # Defensive: Check if data dir exists
     data_path = PROJECT_ROOT / "data"
     if not data_path.exists():
-        raise FileNotFoundError(f"Data directory not found at: {data_path}")
+        return None
     return DBManager(data_path)
 
-try:
-    db = get_db()
-except Exception as e:
-    st.error(f"❌ **Database Initialization Failed**\n\n{e}")
+db = get_db()
+if not db:
+    st.error("Data directory not found!")
     st.stop()
 
 # --- 5. SIDEBAR ---
@@ -51,10 +47,8 @@ if st.sidebar.button("Refresh Database"):
 
 # --- 6. PREVIEW HELPER ---
 def show_preview(node):
-    """Handles logic to call the renderer and update state"""
     with st.spinner(f"Generating preview for {node.id}..."):
         img_path, error_msg = render_node_preview(node)
-        
         if img_path:
             st.session_state.last_preview = img_path
         else:
@@ -75,18 +69,12 @@ with tab1:
         if filter_topic:
             candidates = [q for q in candidates if filter_topic.lower() in (q.topic or "").lower()]
 
-        st.caption(f"Showing {len(candidates)} questions")
-        
-        # Scrollable container
         with st.container(height=500):
             for q in candidates:
                 c1, c2, c3 = st.columns([0.1, 0.7, 0.2])
                 
-                # Checkbox for selection
                 is_selected = q.id in st.session_state.selected_questions
-                
-                # Update state based on interaction
-                if c1.checkbox("Select", key=f"chk_{q.id}", value=is_selected, label_visibility="collapsed"):
+                if c1.checkbox("Sel", key=f"chk_{q.id}", value=is_selected, label_visibility="collapsed"):
                     if q.id not in st.session_state.selected_questions:
                         st.session_state.selected_questions.append(q.id)
                 else:
@@ -102,7 +90,7 @@ with tab1:
     with col_right:
         st.subheader("Your Exam")
         if not st.session_state.selected_questions:
-            st.info("No questions selected. Check boxes on the left.")
+            st.info("No questions selected.")
         else:
             st.write(f"Selected **{len(st.session_state.selected_questions)}** questions.")
             with st.expander("View Selected IDs"):
@@ -117,48 +105,39 @@ with tab1:
                     if path_std and path_key:
                         st.session_state.pdf_ready = str(path_std)
                         st.session_state.key_ready = str(path_key)
-                        st.success("Compilation Successful!")
-                    else:
-                        st.error("Compilation Failed. Check console logs.")
+                        st.success("Success!")
 
-            # DOWNLOAD BUTTONS
-            if st.session_state.pdf_ready and os.path.exists(st.session_state.pdf_ready):
+            if st.session_state.pdf_ready:
                 with open(st.session_state.pdf_ready, "rb") as f:
-                    st.download_button(
-                        label="📄 Download Student Version",
-                        data=f,
-                        file_name="Math_Exam.pdf",
-                        mime="application/pdf"
-                    )
-
-            if st.session_state.key_ready and os.path.exists(st.session_state.key_ready):
+                    st.download_button("📄 Download Exam", f, "Exam.pdf", "application/pdf")
+            if st.session_state.key_ready:
                 with open(st.session_state.key_ready, "rb") as f:
-                    st.download_button(
-                        label="🔑 Download Solution Key",
-                        data=f,
-                        file_name="Math_Exam_Key.pdf",
-                        mime="application/pdf"
-                    )
+                    st.download_button("🔑 Download Key", f, "Key.pdf", "application/pdf")
 
         st.subheader("Live Preview")
         if st.session_state.last_preview and os.path.exists(st.session_state.last_preview):
-            st.image(st.session_state.last_preview, caption="Rendered Output", use_container_width=True)
-        else:
-            st.caption("Click the eye icon 👁️ to preview a question.")
+            st.image(st.session_state.last_preview) # Removed use_container_width to fix warning
 
 # === TAB 2: KNOWLEDGE BASE ===
 with tab2:
     st.markdown("### 📖 Knowledge Base Explorer")
-    kb_type = st.radio("Select Category:", ["Definitions", "Tools", "Mistakes"], horizontal=True)
     
-    if kb_type == "Definitions":
-        items = list(db.definitions.values())
-    elif kb_type == "Tools":
-        items = list(db.tools.values())
-    else:
-        items = list(db.mistakes.values())
+    # NEW: Expanded Categories
+    kb_type = st.radio(
+        "Select Category:", 
+        ["Definitions", "Tools", "Mistakes", "Examples", "Lectures", "Tutorials"], 
+        horizontal=True
+    )
+    
+    items = []
+    if kb_type == "Definitions": items = list(db.definitions.values())
+    elif kb_type == "Tools": items = list(db.tools.values())
+    elif kb_type == "Mistakes": items = list(db.mistakes.values())
+    elif kb_type == "Examples": items = list(db.examples.values())
+    elif kb_type == "Lectures": items = list(db.lectures.values())
+    elif kb_type == "Tutorials": items = list(db.tutorials.values())
         
-    kb_search = st.text_input("Filter Items by Content", "")
+    kb_search = st.text_input("Filter Items", "")
     if kb_search:
         items = [i for i in items if kb_search.lower() in str(i.__dict__).lower()]
 
@@ -168,7 +147,7 @@ with tab2:
         st.caption(f"Found {len(items)} items")
         with st.container(height=600):
             for item in items:
-                label = getattr(item, 'name', getattr(item, 'description', item.id))
+                label = getattr(item, 'name', getattr(item, 'title', getattr(item, 'term', item.id)))
                 
                 kc1, kc2 = st.columns([0.8, 0.2])
                 kc1.markdown(f"**{item.id}**")
@@ -181,6 +160,4 @@ with tab2:
     with k_col2:
         st.subheader("Rendered View")
         if st.session_state.last_preview and os.path.exists(st.session_state.last_preview):
-            st.image(st.session_state.last_preview, use_container_width=True)
-        else:
-            st.info("Select an item on the left to view.")
+            st.image(st.session_state.last_preview)

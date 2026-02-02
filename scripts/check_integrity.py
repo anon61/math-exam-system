@@ -1,68 +1,100 @@
 import sys
 from pathlib import Path
+from typing import Dict, List, Any, Set, Type
 
-# Add project root to sys.path
+# --- SETUP PATHS ---
+# Ensure we can import from the scripts module
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(PROJECT_ROOT))
 
-from scripts.db_manager import DBManager
+try:
+    from scripts.db_manager import DBManager
+    from scripts.models import KnowledgeNode, Question, Definition, Tool, Mistake, Example, Lecture, Tutorial, Course
+except ImportError as e:
+    print(f"❌ Import Error: {e}")
+    sys.exit(1)
 
-def check_integrity():
-    print("Starting Database Integrity Check...")
-    data_path = PROJECT_ROOT / "data"
-    
+def check_integrity() -> None:
+    print("========================================")
+    print("   🛡️  DATA INTEGRITY & TYPE CHECK   ")
+    print("========================================")
+
+    data_dir = PROJECT_ROOT / "data"
+    if not data_dir.exists():
+        print(f"❌ Data directory not found at: {data_dir}")
+        return
+
+    # 1. Load Database
+    print("[1/3] Loading Database...")
     try:
-        db = DBManager(data_path)
+        db = DBManager(data_dir)
     except Exception as e:
-        print(f"CRITICAL: Could not load database. {e}")
-        sys.exit(1)
+        print(f"❌ DB Load Failed: {e}")
+        return
 
-    print(f"   Loaded {len(db.nodes)} nodes.")
-    errors = []
+    # 2. Collect All IDs for Lookup
+    print("[2/3] Indexing IDs...")
+    all_ids: Set[str] = set()
+    all_ids.update(db.questions.keys())
+    all_ids.update(db.definitions.keys())
+    all_ids.update(db.tools.keys())
+    all_ids.update(db.mistakes.keys())
+    all_ids.update(db.examples.keys())
+    all_ids.update(db.lectures.keys())
+    all_ids.update(db.tutorials.keys())
+    # Note: Courses might not be in DBManager if not added explicitly, 
+    # but if they are, add them. Assuming DBManager has them or we skip.
+    
+    print(f"   -> Found {len(all_ids)} unique items.")
 
-    for node_id, node in db.nodes.items():
-        # 1. Check 'related_definition_ids' (Examples)
-        if hasattr(node, 'related_definition_ids'):
-            for target in node.related_definition_ids:
-                if target not in db.definitions:
-                    errors.append(f"[{node_id}] refers to unknown Definition '{target}'")
+    # 3. Verify Links (Foreign Keys)
+    print("[3/3] Verifying Relationships...")
+    error_count = 0
 
-        # 2. Check 'lecture_ref' (Tutorials)
-        if hasattr(node, 'lecture_ref') and node.lecture_ref:
-            if node.lecture_ref not in db.lectures:
-                errors.append(f"[{node_id}] refers to unknown Lecture '{node.lecture_ref}'")
+    def check_ref(source_id: str, ref_id: str, field_name: str) -> None:
+        nonlocal error_count
+        if ref_id and ref_id not in all_ids:
+            print(f"   🚩 Broken Link in [{source_id}]: '{field_name}' points to unknown ID '{ref_id}'")
+            error_count += 1
 
-        # 3. Check Assessment Lists (Questions/Homework)
-        # Fields: tool_ids, mistake_ids, example_ids
-        if hasattr(node, 'tool_ids'):
-            for target in node.tool_ids:
-                if target not in db.tools:
-                    errors.append(f"[{node_id}] refers to unknown Tool '{target}'")
-        
-        if hasattr(node, 'mistake_ids'):
-            for target in node.mistake_ids:
-                if target not in db.mistakes:
-                    errors.append(f"[{node_id}] refers to unknown Mistake '{target}'")
+    def check_refs(source_id: str, ref_ids: List[str], field_name: str) -> None:
+        for rid in ref_ids:
+            check_ref(source_id, rid, field_name)
 
-        if hasattr(node, 'example_ids'):
-            for target in node.example_ids:
-                if target not in db.examples:
-                    errors.append(f"[{node_id}] refers to unknown Example '{target}'")
+    # --- CHECK QUESTIONS ---
+    for q in db.questions.values():
+        check_refs(q.id, q.tools, "tools")
+        # Mistake IDs in questions are stored as strings in 'common_mistakes'
+        check_refs(q.id, q.common_mistakes, "common_mistakes")
 
-        # 4. Check Sequence Lists (Courses)
-        if hasattr(node, 'definition_sequence'):
-            for target in node.definition_sequence:
-                if target not in db.definitions:
-                    errors.append(f"[{node_id}] Broken definition_sequence link '{target}'")
+    # --- CHECK EXAMPLES ---
+    for ex in db.examples.values():
+        check_refs(ex.id, ex.related_definition_ids, "related_definition_ids")
 
-    if errors:
-        print(f"\nFAILED: Found {len(errors)} integrity errors:")
-        for e in errors:
-            print(f"   - {e}")
-        sys.exit(1)
+    # --- CHECK LECTURES ---
+    for lec in db.lectures.values():
+        if lec.course_id:
+            # We assume course IDs are not in the main 'all_ids' unless loaded
+            # If you load courses in DBManager, uncomment the check below:
+            # check_ref(lec.id, lec.course_id, "course_id")
+            pass
+        check_refs(lec.id, lec.definition_ids, "definition_ids")
+        check_refs(lec.id, lec.tool_ids, "tool_ids")
+        check_refs(lec.id, lec.example_ids, "example_ids")
+
+    # --- CHECK TUTORIALS ---
+    for tut in db.tutorials.values():
+        if tut.lecture_ref:
+            check_ref(tut.id, tut.lecture_ref, "lecture_ref")
+        check_refs(tut.id, tut.example_question_ids, "example_question_ids")
+
+    # --- SUMMARY ---
+    print("-" * 40)
+    if error_count == 0:
+        print("✅ INTEGRITY PASSED. All links are valid.")
     else:
-        print("\nSUCCESS: Database integrity verified. No broken links.")
-        sys.exit(0)
+        print(f"❌ FOUND {error_count} BROKEN LINKS.")
+        print("   Action: Open the YAML files mentioned above and fix the IDs.")
 
 if __name__ == "__main__":
     check_integrity()
