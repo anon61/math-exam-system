@@ -1,6 +1,0 @@
-error: file not found (searched at \\?\C:\Projects\math\math-exam-system\temp_previews\src\lib.typ)
-  ┌─ \\?\C:\Projects\math\math-exam-system\temp_previews\def-cauchy.typ:2:12
-  │
-2 │     #import "src/lib.typ": *
-  │             ^^^^^^^^^^^^^
-

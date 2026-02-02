@@ -1,23 +1,29 @@
 // src/lib.typ
 
 // --- CONFIGURATION ---
-#let show_solutions = state("solutions", true) // Toggle to false to hide answers
+// 1. GLOBAL STATE TOGGLE
+#let show_solutions = state("solutions", true) 
+
+// 2. COLORS
 #let dark_blue = rgb("#003366")
 #let dark_green = rgb("#004400")
+#let error_red = rgb("#FF0000")
 
-// 1. LOAD THE DATABASE
+// 3. LOAD THE DATABASE
+// We use a safe loader pattern (assuming files exist; if not, Typst will error on file read, which is acceptable at this stage)
 #let questions = yaml("../data/questions.yaml")
 #let definitions = yaml("../data/definitions.yaml")
 #let tools = yaml("../data/tools.yaml")
 #let examples = yaml("../data/examples.yaml")
 #let mistakes = yaml("../data/mistakes.yaml")
 
-// 2. BUILD THE KNOWLEDGE BASE (Dictionary Lookup)
-// We convert lists to dictionaries for fast ID lookup
+// 4. DICTIONARY CONVERSION
 #let to-dict(list) = {
   let d = (:)
   for item in list {
-    d.insert(item.id, item)
+    if "id" in item {
+      d.insert(item.id, item)
+    }
   }
   d
 }
@@ -27,62 +33,49 @@
   tools: to-dict(tools),
   ex: to-dict(examples),
   err: to-dict(mistakes),
-  questions: to-dict(questions), // &lt;--- ADD THIS LINE
+  questions: to-dict(questions),
 )
 
-// 3. DEFINE THE ACCESSOR FUNCTIONS
-
-// Function: #def("id")
-// Usage: #def("def-bounded")
+// 5. HELPER FUNCTIONS
 #let def(id) = {
   if id in KB.defs {
     let d = KB.defs.at(id)
-    // Render: Bold Dark Blue Text with a link
-    text(fill: rgb("#003366"), weight: "bold")[#d.term]
+    text(fill: dark_blue, weight: "bold")[#d.at("term", default: id)]
   } else {
-    text(fill: red)[Unknown Def: #id]
+    text(fill: error_red)[Unknown Def: #id]
   }
 }
 
-// Function: #tool("id")
-// Usage: #tool("tool-tri-ineq")
 #let tool(id) = {
   if id in KB.tools {
     let t = KB.tools.at(id)
-    // Render: Italic Purple Text
-    text(fill: rgb("#663399"), style: "italic")[#t.name]
+    text(fill: rgb("#663399"), style: "italic")[#t.at("name", default: id)]
   } else {
-    text(fill: red)[Unknown Tool: #id]
+    text(fill: error_red)[Unknown Tool: #id]
   }
 }
 
-// Function: #ex("id")
-// Usage: #ex("ex-harmonic")
 #let ex(id) = {
   if id in KB.ex {
     let e = KB.ex.at(id)
-    // Render: Green Text for Standard, Red for Counter-Example
-    let color = if e.type == "Counter-Example" { rgb("#AA0000") } else { rgb("#006600") }
-    text(fill: color)[#e.name]
+    let type = e.at("type", default: "Standard")
+    let color = if type == "Counter-Example" { rgb("#AA0000") } else { rgb("#006600") }
+    text(fill: color)[#e.at("name", default: id)]
   } else {
-    text(fill: red)[Unknown Ex: #id]
+    text(fill: error_red)[Unknown Ex: #id]
   }
 }
 
-// Function: #mistake("id")
-// Usage: #mistake("err-sign")
 #let mistake(id) = {
   if id in KB.err {
     let m = KB.err.at(id)
-    // Render: Red Strikethrough or Warning
-    text(fill: red)[⚠️ #m.name]
+    text(fill: error_red)[⚠️ #m.at("name", default: id)]
   } else {
-    text(fill: red)[Unknown Mistake: #id]
+    text(fill: error_red)[Unknown Mistake: #id]
   }
 }
 
-// 1. Define Evaluation Scope
-// This allows strings in YAML (like "Let $x$ be #def('limit')...") to be compiled.
+// 6. EVALUATION SCOPE
 #let eval-scope = (
   def: def,
   tool: tool,
@@ -90,70 +83,93 @@
   mistake: mistake
 )
 
-// 2. Question Renderer
+// 7. QUESTION RENDERER
 #let question(id) = {
   if id in KB.questions {
     let q = KB.questions.at(id)
 
     block(width: 100%, breakable: true, {
-      // 1. Header (Topic | Year | Lecturer)
+      // --- HEADER ---
       grid(
         columns: (1fr, 1fr),
         align(left)[
-          #text(weight: "bold", fill: dark_blue, size: 1.1em)[#q.topic]
+          #text(weight: "bold", fill: dark_blue, size: 1.1em)[#q.at("topic", default: "General")]
         ],
         align(right)[
-          #text(style: "italic", fill: gray)[#q.year | #q.lecturer]
+          #text(style: "italic", fill: gray)[
+            #q.at("year", default: "Unknown Year") | #q.at("lecturer", default: "Unknown Lecturer")
+          ]
         ]
       )
       line(length: 100%, stroke: 0.5pt + gray)
 
-      // 2. Given
-      pad(left: 0.5em, top: 0.5em)[
-        *Given:* \
-        #pad(left: 1em)[#eval(q.given, mode: "markup", scope: eval-scope)]
-      ]
-
-      // === NEW: IMAGE RENDERING BLOCK ===
-      // Checks if the 'image' field exists and is not empty
-      context if q.at("image", default: none) != none {
-        pad(y: 1em, align(center)[
-          // We use absolute path from Project Root
-          #image("/data/images/" + q.image, width: 60%)
-        ])
+      // --- GIVEN ---
+      let given = q.at("given", default: none)
+      if given != none {
+        pad(left: 0.5em, top: 0.5em)[
+          *Given:* \
+          #pad(left: 1em)[#eval(given, mode: "markup", scope: eval-scope)]
+        ]
       }
-      // ==================================
 
-      // 3. To Prove
-      pad(left: 0.5em, top: 0.5em)[
-        *To Prove:* \
-        #pad(left: 1em)[#eval(q.to_prove, mode: "markup", scope: eval-scope)]
-      ]
+      // --- IMAGE ---
+      // Robust check: Ensure 'image' exists and is not empty/null
+      let img = q.at("image", default: none)
+      if img != none and img != "" {
+        context {
+            pad(y: 1em, align(center)[
+              // Try/Catch logic isn't strictly available for file loading, 
+              // but we assume the file exists if listed in YAML.
+              #image("/data/images/" + img, width: 60%)
+            ])
+        }
+      }
 
-      // 4. Hint (Optional)
-      if q.at("hint", default: none) != none {
+      // --- TO PROVE ---
+      let to_prove = q.at("to_prove", default: none)
+      if to_prove != none {
+        pad(left: 0.5em, top: 0.5em)[
+          *To Prove:* \
+          #pad(left: 1em)[#eval(to_prove, mode: "markup", scope: eval-scope)]
+        ]
+      }
+
+      // --- HINT ---
+      let hint = q.at("hint", default: none)
+      if hint != none {
         pad(top: 0.5em)[
           #block(fill: luma(245), inset: 8pt, radius: 4pt, width: 100%)[
-            *Hint:* #text(style: "italic")[#q.hint]
+            *Hint:* #text(style: "italic")[#hint]
           ]
         ]
       }
 
-      // 5. Official Solution (Hidden/Shown based on toggle)
+      // --- SOLUTION ---
       context if show_solutions.get() {
         v(1em)
         block(stroke: (left: 2pt + dark_green), inset: (left: 1em))[
           #text(fill: dark_green, weight: "bold")[Official Solution:]
           #v(0.5em)
-          #for step in q.answer_steps {
-            [*#step.title* _(#step.type)_]
-            pad(left: 1em)[#eval(step.content, mode: "markup", scope: eval-scope)]
-            v(0.5em)
+          
+          // iterate safely over steps
+          #let steps = q.at("answer_steps", default: ())
+          #if type(steps) == array {
+            for step in steps {
+              let title = step.at("title", default: "Step")
+              let type = step.at("type", default: "logic")
+              let content = step.at("content", default: "")
+              
+              [*#title* _(#type)_]
+              pad(left: 1em)[#eval(content, mode: "markup", scope: eval-scope)]
+              v(0.5em)
+            }
+          } else {
+             text(style: "italic")[No structured solution available.]
           }
         ]
       }
     })
   } else {
-    text(fill: red)[Unknown Question ID: #id]
+    text(fill: error_red)[Unknown Question ID: #id]
   }
 }

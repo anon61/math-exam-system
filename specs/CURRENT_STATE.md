@@ -1,21 +1,27 @@
-# Project State Log
+# Current System State
 
-## ✅ Completed: Foundation (Phases 1-6)
-- **Core:** Knowledge Graph, Backend, CLI, and Integrity Scripts are live.
-- **Rendering:** `src/lib.typ` renders Questions, Definitions, and Tools.
-- **CLI:** `manage.py` allows Adding/Deleting nodes.
+**Date:** 2026-02-02
+**Phase:** Phase 1 Complete - System Stabilization
+**Status:** 🟢 Stable / Ready for AI Integration
 
-## ✅ Completed: Phase 7 (The Dashboard)
-- **GUI:** Streamlit app (`app.py`) allows browsing and compiling exams.
-- **Preview:** Live rendering of individual questions via `scripts/build_exam.py`.
+## 1. System Health
+The core Exam Engine and Streamlit Dashboard are now fully operational and robust. The previous "fragile rendering" issues caused by missing YAML fields have been resolved via a defensive programming overhaul. The system can now gracefully handle incomplete data without crashing.
 
-## 📅 Status: Phase 7.5 (Stabilization)
-**Goal:** Fix the "Preview Crash" and ensure the Exam Builder works reliably.
+## 2. Recent Changes (Stability Patch)
+### A. Typst Rendering Engine (`src/lib.typ`)
+* **Defensive Field Access:** Replaced all direct object access (e.g., `q.topic`) with `.at("key", default: ...)` to prevent compilation crashes on incomplete data.
+* **Dynamic Solutions Toggle:** Implemented `#let show_solutions = state(...)` to allow Python to control solution visibility dynamically.
+* **Safe Looping:** Added checks for `answer_steps` to ensure it defaults to an empty list if missing.
 
-### 🏗️ Active Tasks
-- [x] **Fix Typst Interface:** Ensure `src/lib.typ` has the `show_solutions` state variable.
-- [x] **Update Exam Builder:** Ensure `build_exam.py` passes the correct Root path to Typst.
-- [ ] **Data Entry:** Use the App to populate the DB with 20+ questions.
+### B. Python Build Scripts (`scripts/build_exam.py`)
+* **Root Path Fix:** Added strict `--root` flag to Typst CLI calls to ensure absolute imports (e.g., `/src/lib.typ`) resolve correctly from any execution context.
+* **Encoding Safety:** Enforced `utf-8` encoding on all file I/O to prevent Windows character map errors.
 
-### 🧠 Context Log
-- **[2026-Feb-01]**: Integrated Streamlit. Fixed "Unknown variable: show_solutions" crash by updating `lib.typ`.
+### C. Streamlit Dashboard (`app.py`)
+* **Initialization Order:** Fixed `st.set_page_config` to be the strictly first executable command.
+* **Path Injection:** Corrected `sys.path` modification order to ensure `scripts` modules are importable.
+* **UI Updates:** Deprecated `use_column_width` replaced with `use_container_width`.
+
+## 3. Immediate Next Steps
+* **Phase 2:** Begin "AI Data Ingestion" pipeline.
+* **Feature:** Implement automated importer for raw text questions.
