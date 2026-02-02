@@ -1,5 +1,6 @@
 from pathlib import Path
 import yaml
+from dataclasses import fields  # <--- CRITICAL IMPORT
 from scripts.models import Question, Definition, Tool, Mistake, Example, Lecture, Tutorial
 
 class DBManager:
@@ -24,12 +25,14 @@ class DBManager:
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f) or []
-                
+            
+            # CRITICAL FIX: Use 'fields()' to get inherited fields (like 'id')
+            valid_keys = {f.name for f in fields(model_class)}
+
             for item in data:
                 if "id" not in item: continue
                 
                 # Filter valid fields only
-                valid_keys = model_class.__annotations__.keys()
                 clean_item = {k: v for k, v in item.items() if k in valid_keys}
                 
                 try:

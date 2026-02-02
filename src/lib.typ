@@ -136,7 +136,7 @@
       stroke: (bottom: 0.5pt + c-gray.lighten(50%)),
       inset: (bottom: 2em),
       {
-        // 1. HEADER (Grid with Chips)
+        // 1. HEADER
         grid(
           columns: (1fr, auto),
           align: (left, right),
@@ -148,7 +148,7 @@
         )
         v(1em)
 
-        // 2. BODY (Stacked content)
+        // 2. BODY
         stack(dir: ttb, spacing: 0.8em,
           // Given
           if q.at("given", default: "") != "" {
@@ -156,9 +156,17 @@
               *Given:* #eval(q.given, mode: "markup", scope: eval-scope)
             ]
           },
-          // Image
-          if q.at("image", default: none) != none and q.image != "" {
-             align(center)[#image("/data/images/" + q.image, width: 60%)]
+          // Image (FIXED: Direct flow + White BG for visibility)
+          if q.at("image", default: none) != none and q.at("image") != "" {
+             align(center, 
+               box(
+                 fill: white, 
+                 inset: 10pt, 
+                 radius: 4pt, 
+                 stroke: 0.5pt + gray,
+                 image("/data/images/" + q.at("image"), width: 60%)
+               )
+             )
           },
           // To Prove
           if q.at("to_prove", default: "") != "" {
@@ -169,7 +177,7 @@
         )
         v(0.5em)
 
-        // 3. HINT (Dashed Box)
+        // 3. HINT
         let hint = q.at("hint", default: none)
         if hint != none {
           block(
@@ -191,22 +199,19 @@
             text(fill: c-success, weight: "bold")[Official Solution]
             v(0.5em)
             
-            // The Timeline Loop
+            // Timeline Loop
             stack(dir: ttb, spacing: 0em, ..steps.map(step => {
               grid(
                 columns: (2em, 1fr),
-                // Left: The Line & Dot
+                // Left: Line & Dot
                 align(center + top)[
                   #place(circle(radius: 3pt, fill: c-success), dy: 0.4em)
                   #line(start: (0pt, 0.4em), end: (0pt, 100% + 1em), stroke: (paint: c-success.lighten(60%), thickness: 1pt))
                 ],
-                // Right: The Content
+                // Right: Content
                 pad(bottom: 1.5em)[
-                   // Title Line (Safe Text)
                    *#step.at("title", default: "Step")* #h(0.5em) 
                    #text(style: "italic", fill: c-gray)[(#step.at("type", default: "logic"))]
-                   
-                   // Content Body
                    #v(0.3em)
                    #eval(step.at("content", default: ""), mode: "markup", scope: eval-scope)
                 ]
