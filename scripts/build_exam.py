@@ -12,7 +12,7 @@ PROJECT_ROOT = CURRENT_DIR.parent
 sys.path.append(str(PROJECT_ROOT))
 
 from scripts.db_manager import DBManager
-from scripts.models import Question, Definition, Tool, Mistake, Example
+from scripts.models import Question, Definition, Tool, Mistake, Example, Lecture, Tutorial
 
 # --- 2. TEMPLATE ---
 # The template explicitly uses the boolean passed from python
@@ -54,11 +54,15 @@ def render_node_preview(node):
     elif isinstance(node, Tool):
         typ_call = f'#tool("{node.id}")'
     elif isinstance(node, Mistake):
-        typ_call = f'== Mistake: {node.id}\n{node.description}' 
+        typ_call = f'#mistake("{node.id}")' 
     elif isinstance(node, Example):
          typ_call = f'#ex("{node.id}")'
+    elif isinstance(node, Lecture):
+         typ_call = f'#lecture("{node.id}")'
+    elif isinstance(node, Tutorial):
+         typ_call = f'#tutorial("{node.id}")'
     else:
-        return None, "Node type not supported for preview."
+        return None, f"Node type '{type(node).__name__}' not supported for preview."
 
     # Preview Template: Force solutions ON, simplified page
     typ_content = f"""

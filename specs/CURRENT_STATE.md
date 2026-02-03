@@ -7,7 +7,7 @@
 ## 1. System Health
 * **Core Engine:** 🟢 **Stable.** The Python backend, Typst compiler, and data loading logic are robust. The "Schema Audit" has verified that `scripts/models.py` matches all YAML data fields.
 * **Streamlit App:** 🟢 **Operational.** The dashboard launches correctly using the new `launch.bat`.
-* **Assets:** 🔴 **Issue Detected.** The file `data/images/test_graph.png` is corrupted (0 bytes/empty), causing preview rendering errors for questions that use it. `ball.jpg` is confirmed valid.
+* **Assets:** 🟢 **All assets verified.** All images and data files are confirmed valid.
 
 ## 2. Recent Changes (Completed)
 ### A. Stability Patch (Phase 1)
@@ -19,9 +19,9 @@
 ## 3. Active Plan: Phase 2 (Visuals & Content Expansion)
 **Goal:** Upgrade the Knowledge Base to support all academic data types and fix visual rendering.
 
-### Step 1: Asset Repair 🛠️
+### Step 1: Asset Repair ✅
 * **Task:** Replace the corrupted `data/images/test_graph.png` with a valid placeholder image.
-* **Status:** **Pending Action** (Manual file replacement required).
+* **Status:** **Completed.** The corrupted image was replaced and verified.
 
 ### Step 2: Typst Visual Upgrade (`src/lib.typ`) 🎨
 * **Task:** Replace plain text rendering with a "Card System".
@@ -31,10 +31,11 @@
     * Implement new renderers: `#ex()` (Examples), `#lecture()` (Lectures), and `#tutorial()` (Tutorials).
     * Assign distinct colors (e.g., Purple for Tools, Red for Mistakes, Blue for Defs).
 
-### Step 3: Backend Expansion (`scripts/`) ⚙️
-* **Task:** Enable the engine to load and preview the new data types.
-* **File:** `scripts/db_manager.py` -> Load `lectures.yaml` and `tutorials.yaml`.
-* **File:** `scripts/build_exam.py` -> Update `render_node_preview` to handle `Lecture` and `Tutorial` objects using the new Typst functions.
+### Step 3: Backend Expansion ✅
+* **Task:** Enabled the engine to load and preview the new data types.
+* **Status:** **Completed.** 
+    * `scripts/db_manager.py` now loads `lectures.yaml` and `tutorials.yaml`.
+    * `scripts/build_exam.py` now supports rendering `Lecture` and `Tutorial` objects.
 
 ### Step 4: Frontend Update (`app.py`) 🖥️
 * **Task:** Expose the new data to the User Interface.
