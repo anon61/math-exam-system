@@ -15,7 +15,10 @@
 = Exam: General
 
 == Question 1
-#question("qn-series-ratio")
+#question("q1")
+
+== Question 2
+#question("q2")
 
 
 

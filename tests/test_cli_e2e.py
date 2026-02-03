@@ -1,4 +1,3 @@
-
 import unittest
 import subprocess
 import sys
@@ -18,6 +17,7 @@ DEFINITION_YAML = DATA_PATH / "definitions.yaml"
 EXAMPLE_YAML = DATA_PATH / "examples.yaml"
 # ---
 
+
 class TestCliE2e(unittest.TestCase):
 
     def setUp(self):
@@ -27,11 +27,11 @@ class TestCliE2e(unittest.TestCase):
         """
         self.backed_up_files = {}
         files_to_manage = [DEFINITION_YAML, EXAMPLE_YAML]
-        
+
         print("\nChecking for existing data files to back up...")
         for f_path in files_to_manage:
             if f_path.exists():
-                backup_path = f_path.with_suffix(f_path.suffix + '.bak')
+                backup_path = f_path.with_suffix(f_path.suffix + ".bak")
                 print(f"  - Backing up '{f_path.name}' to '{backup_path.name}'")
                 f_path.rename(backup_path)
                 self.backed_up_files[f_path] = backup_path
@@ -42,7 +42,7 @@ class TestCliE2e(unittest.TestCase):
         This runs even if the test fails.
         """
         print("\nCleaning up test data and restoring backups...")
-        
+
         # Remove files created by the test
         if DEFINITION_YAML.exists():
             os.remove(DEFINITION_YAML)
@@ -54,7 +54,9 @@ class TestCliE2e(unittest.TestCase):
         # Restore backups
         for original_path, backup_path in self.backed_up_files.items():
             if backup_path.exists():
-                print(f"  - Restoring backup '{backup_path.name}' to '{original_path.name}'")
+                print(
+                    f"  - Restoring backup '{backup_path.name}' to '{original_path.name}'"
+                )
                 backup_path.rename(original_path)
 
     def run_cli_command(self, command, input_text=None):
@@ -64,7 +66,7 @@ class TestCliE2e(unittest.TestCase):
             input=input_text,
             capture_output=True,
             text=True,
-            encoding='utf-8'
+            encoding="utf-8",
         )
 
     def test_referential_integrity_scenario(self):
@@ -80,7 +82,9 @@ class TestCliE2e(unittest.TestCase):
         print("Step 1: Adding definition...")
         add_def_input = f"{DEF_ID}\nAuto Term\nA test definition.\n\n"
         result = self.run_cli_command(["add", "definition"], input_text=add_def_input)
-        self.assertEqual(result.returncode, 0, f"Failed to add definition. Stderr: {result.stderr}")
+        self.assertEqual(
+            result.returncode, 0, f"Failed to add definition. Stderr: {result.stderr}"
+        )
         self.assertIn(f"[Success] Added definition '{DEF_ID}'", result.stdout)
         print("-> Success")
 
@@ -88,7 +92,9 @@ class TestCliE2e(unittest.TestCase):
         print("Step 2: Adding example...")
         add_ex_input = f"{EX_ID}\nAuto Example\nStandard\nSome content.\n\n{DEF_ID}\n"
         result = self.run_cli_command(["add", "example"], input_text=add_ex_input)
-        self.assertEqual(result.returncode, 0, f"Failed to add example. Stderr: {result.stderr}")
+        self.assertEqual(
+            result.returncode, 0, f"Failed to add example. Stderr: {result.stderr}"
+        )
         self.assertIn(f"[Success] Added example '{EX_ID}'", result.stdout)
         print("-> Success")
 
@@ -103,14 +109,20 @@ class TestCliE2e(unittest.TestCase):
         # 4. Delete the example
         print("Step 4: Deleting example...")
         result = self.run_cli_command(["delete", EX_ID])
-        self.assertEqual(result.returncode, 0, f"Failed to delete example. Stderr: {result.stderr}")
+        self.assertEqual(
+            result.returncode, 0, f"Failed to delete example. Stderr: {result.stderr}"
+        )
         self.assertIn(f"[Success] Deleted node '{EX_ID}'", result.stdout)
         print("-> Success")
 
         # 5. Attempt to delete the definition again (should succeed)
         print("Step 5: Attempting to delete definition again (expect success)...")
         result = self.run_cli_command(["delete", DEF_ID])
-        self.assertEqual(result.returncode, 0, f"Failed to delete definition. Stderr: {result.stderr}")
+        self.assertEqual(
+            result.returncode,
+            0,
+            f"Failed to delete definition. Stderr: {result.stderr}",
+        )
         self.assertIn(f"[Success] Deleted node '{DEF_ID}'", result.stdout)
         print("-> Success")
 

@@ -152,7 +152,11 @@
         stack(dir: ttb, spacing: 0.8em,
           // Given
           if q.at("given", default: "") != "" {
-            pad(left: 0.5em, border: (left: 2pt + c-gray))[
+            // NEW (Fixed)
+            block(
+              stroke: (left: 2pt + c-gray), 
+              inset: (left: 0.5em)
+            )[
               *Given:* #eval(q.given, mode: "markup", scope: eval-scope)
             ]
           },

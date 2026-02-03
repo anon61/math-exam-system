@@ -12,6 +12,7 @@ print("\n[1/4] Checking Imports...")
 try:
     from scripts.db_manager import DBManager
     from scripts.build_exam import render_node_preview, generate_exam
+
     print("✅ Imports successful.")
 except ImportError as e:
     print(f"❌ CRITICAL IMPORT ERROR: {e}")
@@ -27,12 +28,14 @@ try:
     db = DBManager(PROJECT_ROOT / "data")
     q_count = len(db.questions)
     print(f"✅ DBManager initialized. Loaded {q_count} questions.")
-    
+
     if q_count == 0:
         print("⚠️  WARNING: Database is empty! The app will look broken.")
 except Exception as e:
     print(f"❌ DATABASE CRASH: {e}")
-    print("   -> Your YAML files might be valid text, but missing fields required by DBManager.")
+    print(
+        "   -> Your YAML files might be valid text, but missing fields required by DBManager."
+    )
     sys.exit(1)
 
 # --- CHECK 3: TYPST COMPILATION (Preview) ---
@@ -42,9 +45,9 @@ try:
     if db.questions:
         first_q = list(db.questions.values())[0]
         print(f"   -> Rendering preview for Question ID: {first_q.id}")
-        
+
         img_path, error = render_node_preview(first_q)
-        
+
         if img_path:
             print(f"✅ Preview generated: {img_path}")
         else:
@@ -63,7 +66,7 @@ try:
         # Try to build a small exam
         print("   -> Compiling full PDF exam...")
         path_std, path_key = generate_exam(count=1, filename="test_exam_output")
-        
+
         if path_std:
             print(f"✅ Student Exam: {path_std}")
             print(f"✅ Teacher Key:  {path_key}")
@@ -76,8 +79,8 @@ except Exception as e:
     print(f"❌ PDF BUILDER CRASH: {e}")
     sys.exit(1)
 
-print("\n" + "="*40)
+print("\n" + "=" * 40)
 print("🎉 FULL STACK VERIFIED!")
 print("The code logic is 100% working.")
 print("If the app fails now, the issue is purely STREAMLIT/BROWSER related.")
-print("="*40)
+print("=" * 40)

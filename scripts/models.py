@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Any
+from typing import List, Optional
 from enum import Enum
+
 
 # --- 1. ENUMS & TYPES ---
 class ExampleType(str, Enum):
@@ -8,13 +9,15 @@ class ExampleType(str, Enum):
     PROOF = "proof"
     CONCEPTUAL = "conceptual"
     CODE = "code"
-    STANDARD = "Standard" 
-    COUNTER_EXAMPLE = "Counter-Example" # Added to match YAML
+    STANDARD = "Standard"
+    COUNTER_EXAMPLE = "Counter-Example"  # Added to match YAML
+
 
 class RelationshipType(str, Enum):
     RELIES_ON = "relies_on"
     RELATED_TO = "related_to"
     PREREQUISITE = "prerequisite"
+
 
 class Severity(str, Enum):
     MINOR = "minor"
@@ -25,11 +28,14 @@ class Severity(str, Enum):
     Minor = "Minor"
     Moderate = "Moderate"
 
+
 # --- 2. CORE GRAPH PRIMITIVES ---
 @dataclass
 class KnowledgeNode:
     """Base class for all nodes. Ensures every object has an ID."""
+
     id: str
+
 
 @dataclass
 class Relationship:
@@ -37,12 +43,14 @@ class Relationship:
     target: str
     type: str
 
+
 @dataclass
 class AnswerStep:
-    type: str  
+    type: str
     title: str
     content: str
     proof: Optional[str] = None  # Added to match YAML (some steps have 'proof: null')
+
 
 # --- 3. UNIVERSITY STRUCTURES ---
 @dataclass
@@ -53,10 +61,11 @@ class Course(KnowledgeNode):
     tool_sequence: List[str] = field(default_factory=list)
     example_sequence: List[str] = field(default_factory=list)
 
+
 @dataclass
 class Lecture(KnowledgeNode):
     # 'name' replaced by 'title' to match YAML
-    title: str 
+    title: str
     course_id: Optional[str] = None
     # Added fields found in audit
     date: Optional[str] = None
@@ -64,6 +73,7 @@ class Lecture(KnowledgeNode):
     definition_ids: List[str] = field(default_factory=list)
     tool_ids: List[str] = field(default_factory=list)
     example_ids: List[str] = field(default_factory=list)
+
 
 @dataclass
 class Tutorial(KnowledgeNode):
@@ -78,13 +88,17 @@ class Tutorial(KnowledgeNode):
 
     def __post_init__(self):
         if not self.title:
-            self.title = f"Tutorial {self.sequence}" if self.sequence else "Untitled Tutorial"
+            self.title = (
+                f"Tutorial {self.sequence}" if self.sequence else "Untitled Tutorial"
+            )
+
 
 @dataclass
 class Homework(KnowledgeNode):
     title: str
     week: int
     content: Optional[str] = None
+
 
 # --- 4. EXAM CONTENT MODELS ---
 @dataclass
@@ -95,16 +109,20 @@ class Question(KnowledgeNode):
     given: str
     to_prove: str
     hint: Optional[str] = None
-    image: Optional[str] = None 
+    image: Optional[str] = None
     answer_steps: List[AnswerStep] = field(default_factory=list)
     # Added fields found in audit
     tools: List[str] = field(default_factory=list)
     common_mistakes: List[str] = field(default_factory=list)
 
     def __post_init__(self):
-        # Handle nested AnswerStep objects if they come in as dicts from YAML
-        if self.answer_steps and isinstance(self.answer_steps[0], dict):
-            self.answer_steps = [AnswerStep(**step) for step in self.answer_steps]
+            # Handle nested AnswerStep objects if they come in as dicts from YAML
+            if self.answer_steps and isinstance(self.answer_steps[0], dict):
+                # FIX: Explicitly cast to list of dicts to satisfy Pylance/MyPy
+                from typing import cast, Dict, Any
+                steps_data = cast(List[Dict[str, Any]], self.answer_steps)
+                self.answer_steps = [AnswerStep(**step) for step in steps_data]
+
 
 @dataclass
 class Definition(KnowledgeNode):
@@ -117,6 +135,7 @@ class Definition(KnowledgeNode):
             self.term = self.name
         if not self.term:
             self.term = "Untitled Definition"
+
 
 @dataclass
 class Tool(KnowledgeNode):
@@ -136,24 +155,30 @@ class Tool(KnowledgeNode):
         if not self.description:
             self.description = "No description provided."
 
+
 @dataclass
 class Mistake(KnowledgeNode):
     description: str
-    severity: Optional[str] = None # Changed to str to be lenient with "Critical" vs "critical"
+    severity: Optional[str] = (
+        None  # Changed to str to be lenient with "Critical" vs "critical"
+    )
     correction: Optional[str] = None
     # Added fields found in audit
     name: Optional[str] = None
-    remedy: Optional[str] = None 
+    remedy: Optional[str] = None
 
     def __post_init__(self):
         # Normalize remedy/correction
         if not self.correction and self.remedy:
             self.correction = self.remedy
 
+
 @dataclass
 class Example(KnowledgeNode):
     name: str  # Renamed from 'title' to match YAML
     content: str
-    type: Optional[str] = "Standard" # Changed to str to accept "Counter-Example" easily
+    type: Optional[str] = (
+        "Standard"  # Changed to str to accept "Counter-Example" easily
+    )
     # Added fields found in audit
     related_definition_ids: List[str] = field(default_factory=list)

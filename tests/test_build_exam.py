@@ -8,17 +8,22 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from scripts.build_exam import generate_exam, render_node_preview
 from scripts.models import Question
 
+
 class TestBuildExam(unittest.TestCase):
     def setUp(self):
         # Create a dummy project structure in memory if needed, but for now, mocking is enough.
         self.project_root = Path(__file__).resolve().parent.parent
         # A sample question node to be used in tests.
-        self.sample_question = Question(id="qn-test", topic="Calculus", year=2023, lecturer="Dr. Gemini")
+        self.sample_question = Question(
+            id="qn-test", topic="Calculus", year=2023, lecturer="Dr. Gemini"
+        )
 
     @patch("scripts.build_exam.subprocess.run")
     @patch("scripts.build_exam.open", new_callable=unittest.mock.mock_open)
     @patch("scripts.build_exam.DBManager")
-    def test_generate_exam_logic(self, mock_db_manager, mock_open_file, mock_subprocess):
+    def test_generate_exam_logic(
+        self, mock_db_manager, mock_open_file, mock_subprocess
+    ):
         """
         Test the logic of generate_exam without touching the filesystem or running Typst.
         """
@@ -44,7 +49,7 @@ class TestBuildExam(unittest.TestCase):
         # 2. Check if the .typ files were written with the correct content
         # We expect two calls to open: one for student, one for teacher's key
         self.assertEqual(mock_open_file.call_count, 2)
-        
+
         # The mock_open().write method will have been called twice.
         write_calls = mock_open_file().write.call_args_list
         self.assertEqual(len(write_calls), 2)
@@ -57,11 +62,31 @@ class TestBuildExam(unittest.TestCase):
 
         # 3. Check if Typst was called twice
         self.assertEqual(mock_subprocess.call_count, 2)
-        
+
         # Check the compilation commands
         expected_calls = [
-            call(['typst', 'compile', '--root', str(self.project_root), str(self.project_root / 'test_exam.typ')], check=True, encoding='utf-8'),
-            call(['typst', 'compile', '--root', str(self.project_root), str(self.project_root / 'test_exam_key.typ')], check=True, encoding='utf-8')
+            call(
+                [
+                    "typst",
+                    "compile",
+                    "--root",
+                    str(self.project_root),
+                    str(self.project_root / "test_exam.typ"),
+                ],
+                check=True,
+                encoding="utf-8",
+            ),
+            call(
+                [
+                    "typst",
+                    "compile",
+                    "--root",
+                    str(self.project_root),
+                    str(self.project_root / "test_exam_key.typ"),
+                ],
+                check=True,
+                encoding="utf-8",
+            ),
         ]
         mock_subprocess.assert_has_calls(expected_calls, any_order=False)
 
@@ -73,7 +98,7 @@ class TestBuildExam(unittest.TestCase):
         """
         # Arrange
         mock_subprocess.return_value = MagicMock(returncode=0)
-        
+
         # Act
         img_path, error_msg = render_node_preview(self.sample_question)
 
@@ -85,7 +110,7 @@ class TestBuildExam(unittest.TestCase):
 
         # 2. Check content of the .typ file
         self.assertEqual(mock_open_file.call_count, 1)
-        
+
         write_calls = mock_open_file().write.call_args_list
         self.assertEqual(len(write_calls), 1)
         preview_typ_content = write_calls[0][0][0]

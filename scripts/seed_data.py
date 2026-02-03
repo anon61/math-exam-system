@@ -5,9 +5,10 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(PROJECT_ROOT))
 
-from scripts.db_manager import DBManager
-from scripts.models import Question, AnswerStep
-from scripts.manage import save_changes
+from scripts.db_manager import DBManager  # noqa: E402
+from scripts.models import Question, AnswerStep  # noqa: E402
+from scripts.manage import save_changes  # noqa: E402
+
 
 def seed():
     print("Seeding Database with Fresh Typst Content...")
@@ -24,9 +25,13 @@ def seed():
             to_prove="Calculate $integral_0^1 f(x) dif x$.",
             hint="Use integration by parts twice.",
             answer_steps=[
-                AnswerStep(type="Calculation", title="Step 1", content="Let $u = x^2$ and $dif v = e^x dif x$."),
-                AnswerStep(type="Result", title="Final Answer", content="$e - 2$.")
-            ]
+                AnswerStep(
+                    type="Calculation",
+                    title="Step 1",
+                    content="Let $u = x^2$ and $dif v = e^x dif x$.",
+                ),
+                AnswerStep(type="Result", title="Final Answer", content="$e - 2$."),
+            ],
         ),
         # 2. Set Theory (De Morgan)
         Question(
@@ -38,8 +43,12 @@ def seed():
             to_prove="Prove $(A union B)^c = A^c sect B^c$.",
             hint="Show mutual inclusion (LHS subset RHS and RHS subset LHS).",
             answer_steps=[
-                AnswerStep(type="Proof", title="Forward Direction", content="Let $x in (A union B)^c$. Then $x in.not A union B$.")
-            ]
+                AnswerStep(
+                    type="Proof",
+                    title="Forward Direction",
+                    content="Let $x in (A union B)^c$. Then $x in.not A union B$.",
+                )
+            ],
         ),
         # 3. Linear Algebra (Eigenvalues)
         Question(
@@ -51,8 +60,12 @@ def seed():
             to_prove="Find the eigenvalues of $A$.",
             hint="Solve $det(A - lambda I) = 0$.",
             answer_steps=[
-                AnswerStep(type="Calculation", title="Characteristic Eq", content="$(2-lambda)^2 - 1 = 0$.")
-            ]
+                AnswerStep(
+                    type="Calculation",
+                    title="Characteristic Eq",
+                    content="$(2-lambda)^2 - 1 = 0$.",
+                )
+            ],
         ),
         # 4. Limits (Squeeze Theorem)
         Question(
@@ -64,8 +77,12 @@ def seed():
             to_prove="Prove that $lim(x_n) = 0$.",
             hint="Use the Squeeze Theorem with $-1/n <= x_n <= 1/n$.",
             answer_steps=[
-                AnswerStep(type="Proof", title="Bound", content="Since $|sin(n)| <= 1$, we have $-1 <= sin(n) <= 1$.")
-            ]
+                AnswerStep(
+                    type="Proof",
+                    title="Bound",
+                    content="Since $|sin(n)| <= 1$, we have $-1 <= sin(n) <= 1$.",
+                )
+            ],
         ),
         # 5. Complex Numbers (Roots)
         Question(
@@ -77,8 +94,12 @@ def seed():
             to_prove="Find all roots of unity in the form $a + b i$.",
             hint="Use De Moivre's Theorem: $e^(i theta) = cos(theta) + i sin(theta)$.",
             answer_steps=[
-                AnswerStep(type="Result", title="Roots", content="$1, (-1 + i sqrt(3))/2, (-1 - i sqrt(3))/2$.")
-            ]
+                AnswerStep(
+                    type="Result",
+                    title="Roots",
+                    content="$1, (-1 + i sqrt(3))/2, (-1 - i sqrt(3))/2$.",
+                )
+            ],
         ),
         # 6. Series (Convergence)
         Question(
@@ -90,8 +111,12 @@ def seed():
             to_prove="Determine if $S$ converges.",
             hint="Use the Ratio Test.",
             answer_steps=[
-                AnswerStep(type="Calculation", title="Ratio", content="$lim_(n->infinity) |a_(n+1)/a_n| = 1/e < 1$.")
-            ]
+                AnswerStep(
+                    type="Calculation",
+                    title="Ratio",
+                    content="$lim_(n->infinity) |a_(n+1)/a_n| = 1/e < 1$.",
+                )
+            ],
         ),
         # 7. Logic (Truth Table)
         Question(
@@ -103,8 +128,12 @@ def seed():
             to_prove="Show that $P => Q$ is equivalent to $not Q => not P$.",
             hint="Construct a truth table.",
             answer_steps=[
-                AnswerStep(type="Proof", title="Contrapositive", content="This is the Law of Contrapositive.")
-            ]
+                AnswerStep(
+                    type="Proof",
+                    title="Contrapositive",
+                    content="This is the Law of Contrapositive.",
+                )
+            ],
         ),
         # 8. Geometry (Vectors)
         Question(
@@ -116,8 +145,12 @@ def seed():
             to_prove="Calculate the angle between $vec(u)$ and $vec(v)$.",
             hint="Use $vec(u) dot vec(v) = |vec(u)| |vec(v)| cos(theta)$.",
             answer_steps=[
-                AnswerStep(type="Calculation", title="Dot Product", content="$1(3) + 2(-1) = 1$.")
-            ]
+                AnswerStep(
+                    type="Calculation",
+                    title="Dot Product",
+                    content="$1(3) + 2(-1) = 1$.",
+                )
+            ],
         ),
         # 9. Combinatorics (Binomial)
         Question(
@@ -129,8 +162,12 @@ def seed():
             to_prove="Expand using the Binomial Theorem.",
             hint="Coefficients are 1, 4, 6, 4, 1.",
             answer_steps=[
-                AnswerStep(type="Result", title="Expansion", content="$x^4 + 4x^3 y + 6x^2 y^2 + 4x y^3 + y^4$.")
-            ]
+                AnswerStep(
+                    type="Result",
+                    title="Expansion",
+                    content="$x^4 + 4x^3 y + 6x^2 y^2 + 4x y^3 + y^4$.",
+                )
+            ],
         ),
         # 10. Topology (Open Sets)
         Question(
@@ -142,8 +179,12 @@ def seed():
             to_prove="Prove that $(0, 1)$ is an open set.",
             hint="Find a ball $B_epsilon(x)$ for every point.",
             answer_steps=[
-                AnswerStep(type="Proof", title="Radius", content="For any $x$, choose $epsilon = min(x, 1-x)$.")
-            ]
+                AnswerStep(
+                    type="Proof",
+                    title="Radius",
+                    content="For any $x$, choose $epsilon = min(x, 1-x)$.",
+                )
+            ],
         ),
     ]
 
@@ -160,6 +201,7 @@ def seed():
         print(f"Successfully added {added_count} new questions!")
     else:
         print("Database is already populated.")
+
 
 if __name__ == "__main__":
     seed()

@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from typing import Dict, List, Any, Set, Type
+from typing import List, Set
 
 # --- SETUP PATHS ---
 # Ensure we can import from the scripts module
@@ -9,10 +9,10 @@ sys.path.append(str(PROJECT_ROOT))
 
 try:
     from scripts.db_manager import DBManager
-    from scripts.models import KnowledgeNode, Question, Definition, Tool, Mistake, Example, Lecture, Tutorial, Course
 except ImportError as e:
     print(f"❌ Import Error: {e}")
     sys.exit(1)
+
 
 def check_integrity() -> None:
     print("========================================")
@@ -42,9 +42,9 @@ def check_integrity() -> None:
     all_ids.update(db.examples.keys())
     all_ids.update(db.lectures.keys())
     all_ids.update(db.tutorials.keys())
-    # Note: Courses might not be in DBManager if not added explicitly, 
+    # Note: Courses might not be in DBManager if not added explicitly,
     # but if they are, add them. Assuming DBManager has them or we skip.
-    
+
     print(f"   -> Found {len(all_ids)} unique items.")
 
     # 3. Verify Links (Foreign Keys)
@@ -54,7 +54,9 @@ def check_integrity() -> None:
     def check_ref(source_id: str, ref_id: str, field_name: str) -> None:
         nonlocal error_count
         if ref_id and ref_id not in all_ids:
-            print(f"   🚩 Broken Link in [{source_id}]: '{field_name}' points to unknown ID '{ref_id}'")
+            print(
+                f"   🚩 Broken Link in [{source_id}]: '{field_name}' points to unknown ID '{ref_id}'"
+            )
             error_count += 1
 
     def check_refs(source_id: str, ref_ids: List[str], field_name: str) -> None:
@@ -95,6 +97,7 @@ def check_integrity() -> None:
     else:
         print(f"❌ FOUND {error_count} BROKEN LINKS.")
         print("   Action: Open the YAML files mentioned above and fix the IDs.")
+
 
 if __name__ == "__main__":
     check_integrity()
